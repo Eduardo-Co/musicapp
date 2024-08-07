@@ -229,15 +229,14 @@
                             />
                         </div>
                     </div>
-                    <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700">Artists</label>
-                        <div class="flex flex-wrap gap-2 mt-2">
-                            @foreach($viewingMusic->albuns as $album)
-                                <div class="bg-gray-100 px-4 py-2 rounded-lg shadow-sm">
-                                    <span>{{ $album->name }}</span>
-                                </div>
-                            @endforeach
-                        </div>
+                    <div class="my-1">
+                        <label class="block text-sm font-medium text-gray-700">Album</label>
+                        <input 
+                            type="text" 
+                            value="{{ $viewingMusic->album->name}}" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-100" 
+                            disabled
+                        >
                     </div>
                 </div>
             </div>

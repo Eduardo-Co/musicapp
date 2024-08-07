@@ -9,6 +9,6 @@
 @stop
 
 @section('content')
-    @livewire('user-music')
-    @livewireScripts
+<livewire:user-music />
+@livewireScripts
 @stop
