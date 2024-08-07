@@ -50,6 +50,14 @@
                             </p>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.albuns') }}" class="nav-link">
+                            <i class="nav-icon fas fa-compact-disc"></i>
+                            <p>
+                                Albums
+                            </p>
+                        </a>
+                    </li>
                 @endcan
             </ul>
         </nav>

@@ -29,7 +29,6 @@
     @if($isEditing || $isCreating)
         <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-40" wire:click.self="resetInputFields">
             <div class="relative bg-white rounded-lg shadow-lg w-full max-w-lg" @click.stop>
-                <!-- Botão de Fechar -->
                 <button wire:click="resetInputFields" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900" wire:loading.attr="disabled">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -50,7 +49,7 @@
                                     wire:model="title" 
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
-                                @error('title') <span class="text-red-500">{{ $message }}</span> @enderror
+                                @error('title') <span class="text-red-50'z0">{{ $message }}</span> @enderror
                             </div>
                             <div>
                                 <label for="genre" class="block text-sm font-medium text-gray-700">Genre</label>
@@ -83,7 +82,7 @@
                                 @error('release_date') <span class="text-red-500">{{ $message }}</span> @enderror
                             </div>
                             <div>
-                                <label for="duration" class="block text-sm font-medium text-gray-700">Duration (in seconds)</label>
+                                <label for="duration" class="block text-sm font-medium text-gray-700">Duration (seconds)</label>
                                 <input 
                                     type="number" 
                                     id="duration" 
@@ -99,13 +98,13 @@
                                     wire:model="status" 
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
-                                    <option value="actived">Actived</option>
-                                    <option value="inactived">Inactived</option>
+                                    <option value="actived">Ativo</option>
+                                    <option value="inactived">Inativo</option>
                                 </select>
                                 @error('status') <span class="text-red-500">{{ $message }}</span> @enderror
                             </div>
                             <div>
-                                <label for="file_url" class="block text-sm font-medium text-gray-700">File</label>
+                                <label for="file_url" class="block text-sm font-medium text-gray-700">Music File</label>
                                 <input 
                                     type="file" 
                                     id="file_url" 
@@ -115,19 +114,32 @@
                                 @error('file_url') <span class="text-red-500">{{ $message }}</span> @enderror
                             </div>
                             <div>
-                                <label for="artist_id" class="block text-sm font-medium text-gray-700">Artist</label>
+                                <label for="album_search" class="block text-sm font-medium text-gray-700">Search Album</label>
+                                <div class="relative">
+                                    <input 
+                                        type="text" 
+                                        id="album_search" 
+                                        wire:model.debounce.300ms="searchAlbum" 
+                                        placeholder="Search for Albuns..."
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    @error('album') <span class="text-red-500">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            <div>
+                                <label for="album" class="block text-sm font-medium text-gray-700">Album</label>
                                 <select 
-                                    id="artist_id" 
-                                    wire:model="artist_id" 
+                                    id="album" 
+                                    wire:model="album_id" 
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
-                                    <option value="">Select Artist</option>
-                                    @foreach($artists as $artist)
-                                        <option value="{{ $artist->id }}">{{ $artist->nome }}</option>
+                                    <option value="">Select Album</option>
+                                    @foreach($albuns as $album)
+                                        <option value="{{ $album->id }}">{{ $album->name }}</option>
                                     @endforeach
                                 </select>
-                                @error('artist_id') <span class="text-red-500">{{ $message }}</span> @enderror
-                            </div>
+                                @error('album') <span class="text-red-500">{{ $message }}</span> @enderror
+                            </div>                                                          
                         </div>
                     </div>
                     <div class="p-4 border-t border-gray-200 flex justify-end">
@@ -137,7 +149,9 @@
                             wire:loading.attr="disabled"
                             wire:loading.class="bg-gray-400"
                         >
-                            {{ $isCreating ? 'Create Music' : 'Update Music' }}
+                            <span wire:loading.block>
+                                {{ $isCreating ? 'Create Music' : 'Update Music' }}
+                            </span>
                         </button>
                     </div>
                 </form>
@@ -218,9 +232,9 @@
                     <div class="mt-4">
                         <label class="block text-sm font-medium text-gray-700">Artists</label>
                         <div class="flex flex-wrap gap-2 mt-2">
-                            @foreach($viewingMusic->artistas as $artist)
+                            @foreach($viewingMusic->albuns as $album)
                                 <div class="bg-gray-100 px-4 py-2 rounded-lg shadow-sm">
-                                    <span>{{ $artist->nome }}</span>
+                                    <span>{{ $album->name }}</span>
                                 </div>
                             @endforeach
                         </div>

@@ -1,23 +1,14 @@
+<!-- resources/views/admin/users.blade.php -->
+
 @extends('adminlte::page')
 
-@section('title', 'Dashboard')
-
-@section('content')
-<div class="flex justify-center items-center h-screen">
-    <div class="text-center">
-        <h1 class="text-4xl font-bold mb-4">Welcome to the Music App!</h1>
-        <p class="text-lg">Start exploring and enjoying your favorite tunes.</p>
-    </div>
-</div>
-@stop
+@section('title', 'Users')
 
 @section('css')
-<link rel="stylesheet" href="/css/admin_custom.css">
-<link href="{{ mix('css/app.css') }}" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
 @stop
 
-@section('js')
-<script>
-    console.log('Hi!');
-</script>
+@section('content')
+    @livewire('user-music')
+    @livewireScripts
 @stop
