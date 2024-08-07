@@ -13,7 +13,7 @@ class Artista extends Component
     use WithPagination, WithFileUploads;
 
     public $nome;
-    public $generos = ['Rock', 'Pop', 'Hip Hop', 'R&B', 'Country', 'Jazz', 'Reggae', 'Electronic', 'Classical'];
+    public $genero; // Corrigido para singular
     public $foto_url;
     public $selectedArtistaId;
     public $searchTerm = '';
@@ -22,7 +22,7 @@ class Artista extends Component
 
     protected $rules = [
         'nome' => 'required|string|max:255',
-        'genero' => 'nullable|string|max:50',
+        'genero' => 'required|string|max:50',
         'foto_url' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
     ];
 
@@ -51,7 +51,7 @@ class Artista extends Component
         $artista = ArtistaModel::findOrFail($artistaId);
         $this->selectedArtistaId = $artista->id;
         $this->nome = $artista->nome;
-        $this->generos = $artista->genero;
+        $this->genero = $artista->genero; // Corrigido para 'genero'
         $this->foto_url = $artista->foto_url;
         $this->isEditing = true;
         $this->isCreating = false;
@@ -67,27 +67,26 @@ class Artista extends Component
     public function save()
     {
         $this->validate();
-        $this->dispatchBrowserEvent('delaySubmit', ['delay' => 1000]);
 
         $fotoUrl = null;
-    
+
         if ($this->foto_url) {
             $fotoUrl = $this->foto_url->store('photos', 'public');
         }
-    
+
         if ($this->isEditing) {
-            $artista = ArtistaModel::find($this->selectedArtistaId);
-    
+            $artista = ArtistaModel::findOrFail($this->selectedArtistaId);
+
             if ($artista->foto_url && $fotoUrl && $artista->foto_url !== $fotoUrl) {
                 Storage::disk('public')->delete($artista->foto_url);
             }
-    
+
             $artista->update([
                 'nome' => $this->nome,
                 'genero' => $this->genero,
                 'foto_url' => $fotoUrl ?? $artista->foto_url,
             ]);
-    
+
             session()->flash('message', 'Artista atualizado com sucesso.');
         } elseif ($this->isCreating) {
             ArtistaModel::create([
@@ -95,18 +94,17 @@ class Artista extends Component
                 'genero' => $this->genero,
                 'foto_url' => $fotoUrl,
             ]);
-    
+
             session()->flash('message', 'Artista criado com sucesso.');
         }
-    
+
         $this->resetInputFields();
     }
-    
 
     public function resetInputFields()
     {
         $this->nome = '';
-        $this->generos = '';
+        $this->genero = ''; // Corrigido para 'genero'
         $this->foto_url = null;
         $this->selectedArtistaId = null;
         $this->isEditing = false;
@@ -120,6 +118,6 @@ class Artista extends Component
             Storage::disk('public')->delete($artista->foto_url);
         }
         $artista->delete();
-        session()->flash('message', 'Artista deletado com sucesso.');
+        session()->flash('message-deleted', 'Artista deletado com sucesso.');
     }
 }

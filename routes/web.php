@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\UsersController;
 
 
 
@@ -30,10 +29,11 @@ Route::middleware(['auth'])->group(function () {
     
     //rota admin
     Route::middleware(['is_admin'])->group(function () {
-        Route::get('/dashboard', [App\Http\Controllers\HomeController::class, 'dashboard'])
+        Route::get('/dashboard', [HomeController::class, 'dashboard'])
             ->name('dashboard');
             
-        
+        //users
+
         Route::get('/users', function () {
             return view('users.index');
         })->name('admin.user');
@@ -42,6 +42,8 @@ Route::middleware(['auth'])->group(function () {
             return view('users.index');
         })->name('admin.user');
         
+        //artists
+
         Route::get('/artists', function () {
             return view('artistas.index');
         })->name('admin.artists');
@@ -50,6 +52,8 @@ Route::middleware(['auth'])->group(function () {
             return view('artistas.index');
         })->name('admin.artists');
 
+        //musics
+
         Route::get('/musics', function () {
             return view('musics.index');
         })->name('admin.musics');
@@ -57,5 +61,15 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/musics', function () {
             return view('musics.index');
         })->name('admin.musics');
+
+        //albuns
+        
+        Route::get('/albuns', function () {
+            return view('albuns.index');
+        })->name('admin.albuns');
+
+        Route::post('/albuns', function () {
+            return view('albuns.index');
+        })->name('admin.albuns');
     });
 });

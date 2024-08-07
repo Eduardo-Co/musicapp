@@ -123,6 +123,6 @@ class User extends Component
     public function delete($userId)
     {
         UserModel::findOrFail($userId)->delete();
-        session()->flash('message', 'User deleted successfully.');
+        session()->flash('message-deleted', 'User deleted successfully.');
     }
 }

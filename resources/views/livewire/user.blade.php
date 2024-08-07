@@ -1,4 +1,30 @@
 <div class="container mx-auto p-6">
+    @if(session()->has('message') || session()->has('message-deleted'))
+        <div id="toastrMsg" class="mb-4 p-4 rounded-lg @if(session()->has('message')) bg-green-100 border-green-300 @elseif(session()->has('message-deleted')) bg-red-100 border-red-300 @endif">
+            @if(session()->has('message'))
+                <span class="text-green-600 inline-flex items-center">
+                    <strong>{{ session('message') }}</strong>
+                    <button class="ml-4 text-green-600 hover:text-green-900">
+                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </span>
+            @endif
+            
+            @if(session()->has('message-deleted'))
+                <span class="text-red-600 inline-flex items-center">
+                    <strong>{{ session('message-deleted') }}</strong>
+                    <button class="ml-4 text-red-600 hover:text-red-900">
+                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </span>
+            @endif
+        </div>
+    @endif
+
     @if($isEditing || $isCreating)
         <!-- Modal de Edição/Criação -->
         <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" wire:click.self="resetInputFields">
@@ -27,7 +53,6 @@
                                     id="name" 
                                     wire:model="name" 
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    wire:loading.attr="disabled"
                                 />
                                 @error('name') <span class="text-red-500">{{ $message }}</span> @enderror
                             </div>
@@ -38,7 +63,6 @@
                                     id="email" 
                                     wire:model="email" 
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    wire:loading.attr="disabled"
                                 />
                                 @error('email') <span class="text-red-500">{{ $message }}</span> @enderror
                             </div>
@@ -50,18 +74,17 @@
                                         id="password" 
                                         wire:model="password" 
                                         class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        wire:loading.attr="disabled"
                                     />
                                     @error('password') <span class="text-red-500">{{ $message }}</span> @enderror
                                 </div>
                             @endif
+                            @if($profile != "administrator")
                             <div>
                                 <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
                                 <select 
                                     id="status" 
                                     wire:model="status" 
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    wire:loading.attr="disabled"
                                 >
                                     <option value="">Select Status</option>
                                     <option value="actived">Actived</option>
@@ -70,6 +93,7 @@
                                 </select>
                                 @error('status') <span class="text-red-500">{{ $message }}</span> @enderror
                             </div>
+                            @endif
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Gender</label>
                                 <div class="flex items-center space-x-4">
@@ -80,7 +104,6 @@
                                             value="male" 
                                             wire:model="gender" 
                                             class="form-radio text-blue-600 focus:ring-blue-500"
-                                            wire:loading.attr="disabled"
                                         />
                                         <span class="text-gray-700">Male</span>
                                     </label>
@@ -107,7 +130,6 @@
                                     wire:model="profile" 
                                     value="{{ $isCreating ? 'user' : $profile }}" 
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    wire:loading.attr="disabled"
                                 />
                                 @error('profile') <span class="text-red-500">{{ $message }}</span> @enderror
                             </div>
@@ -146,12 +168,6 @@
             </button>
         </div>
     @endunless
-
-    @if (session()->has('message'))
-        <div class="mb-4 text-green-600">
-            {{ session('message') }}
-        </div>
-    @endif
 
     <div class="rounded-lg border border-gray-300 shadow-lg">
         <div class="overflow-x-auto">

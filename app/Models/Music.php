@@ -20,6 +20,7 @@ class Music extends Model
         'file_url',
 
     ];
+    
 
     protected $casts = [
         'release_date' => 'date',
@@ -29,4 +30,12 @@ class Music extends Model
     protected $attributes = [
         'status' => 'actived',
     ];
+
+
+
+
+    public function album()
+    {
+        return $this->belongsTo(Album::class);
+    }
 }

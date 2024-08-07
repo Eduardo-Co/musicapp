@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Artista extends Model
+class Album extends Model
 {
     use HasFactory;
 
@@ -14,13 +14,10 @@ class Artista extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'nome',
-        'genero',
-        'biografia',
-        'foto_url',
+   
+     protected $fillable = [
+        'name', 'release_date','foto_url',
     ];
-
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -31,8 +28,20 @@ class Artista extends Model
         'updated_at',
     ];
 
-    public function albums()
+    protected $casts = [
+        'release_date' => 'datetime',
+    ];
+
+    /**
+     * The artistas that belong to the album.
+     */
+    public function artistas()
     {
-        return $this->belongsToMany(Album::class, 'artistas_albums');
+        return $this->belongsToMany(Artista::class, 'artistas_albums');
+    }
+
+    public function musics()
+    {
+        return $this->hasMany(Music::class);
     }
 }

@@ -42,6 +42,14 @@
                             </p>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.musics') }}" class="nav-link">
+                            <i class="nav-icon fas fa-music"></i>
+                            <p>
+                                Songs
+                            </p>
+                        </a>
+                    </li>
                 @endcan
             </ul>
         </nav>
