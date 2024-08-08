@@ -24,10 +24,23 @@ Route::get('/', function () {
 Auth::routes();
 Route::middleware(['auth'])->group(function () {
 
-    Route::get('home',[HomeController::class, 'index'])->name('home');
-    Route::post('home',[HomeController::class, 'index'])->name('home');
+    //usuario
+    Route::get('home',[HomeController::class, 'index'])
+    ->name('home');
+    Route::post('home',[HomeController::class, 'index'])
+    ->name('home');
 
-    
+    //favoritas
+
+    Route::get('/favority-musics', function () {
+        return view('musics.favoritas');
+    })->name('favoritas');
+
+    Route::post('/favority-musics', function () {
+        return view('musics.favoritas');
+    })->name('favoritas');
+
+
     //rota admin
     Route::middleware(['is_admin'])->group(function () {
         Route::get('/dashboard', [HomeController::class, 'dashboard'])

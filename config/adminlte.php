@@ -229,11 +229,13 @@ return [
             'search' => false,
             'topnav' => true,
         ],
+        /*
         [
             'text' => 'All Musics',
             'url'  => 'home',
             'icon' => 'fas fa-volume-up',
         ],
+        */
         [
             'text' => 'Dashboard',
             'url'  => 'dashboard',
