@@ -5,6 +5,7 @@ namespace App\Http\Livewire;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Music;
+use Illuminate\Support\Facades\Log;
 
 class UserMusic extends Component
 {
@@ -19,68 +20,134 @@ class UserMusic extends Component
 
     public function play($musicId)
     {
-        $this->currentMusicId = $musicId;
-        $this->isPlaying = true;
+        if ($this->currentMusicId === $musicId && $this->isPlaying) {
+            return; // Evitar chamada desnecessária
+        }
 
-        $music = Music::with('album')->find($musicId);
-        if ($music) {
-            $this->currentMusic = $music;
-            $this->emit('playMusic', $this->formatMusicUrl($music->file_url), $music->title, $this->formatDuration($music->duration), $music->album_image);
+        try {
+            $this->currentMusicId = $musicId;
+            $this->isPlaying = true;
+
+            $music = Music::with('album')->find($musicId);
+            if ($music) {
+                $this->currentMusic = $music;
+                $this->emit('playMusic', $this->formatMusicUrl($music->file_url), $music->title, $this->formatDuration($music->duration), $music->album_image);
+            } else {
+                Log::warning('Music not found with ID: ' . $musicId);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error in play method: ' . $e->getMessage(), ['exception' => $e]);
+            $this->emit('errorOccurred', ['message' => 'Could not play music.']);
         }
     }
 
     public function pause()
     {
-        $this->isPlaying = false;
-        $this->emit('pauseMusic');
+        try {
+            $this->isPlaying = false;
+            $this->emit('pauseMusic');
+        } catch (\Exception $e) {
+            Log::error('Error in pause method: ' . $e->getMessage(), ['exception' => $e]);
+            $this->emit('errorOccurred', ['message' => 'Could not pause music.']);
+        }
     }
 
     public function togglePlayPause()
     {
-        if ($this->isPlaying) {
-            $this->pause();
-        } else {
-            $this->play($this->currentMusicId);
+        try {
+            if ($this->isPlaying) {
+                $this->pause();
+            } else {
+                $this->play($this->currentMusicId);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error in togglePlayPause method: ' . $e->getMessage(), ['exception' => $e]);
+            $this->emit('errorOccurred', ['message' => 'Could not toggle play/pause.']);
         }
     }
 
     public function next()
     {
-        if ($this->currentMusicId === null) {
-            return;
+        try {
+            if ($this->currentMusicId === null) {
+                return;
+            }
+
+            $currentMusic = Music::find($this->currentMusicId);
+            if (!$currentMusic) {
+                Log::warning('Current music not found.');
+                return;
+            }
+
+            $nextMusic = Music::where('id', '>', $this->currentMusicId)
+                ->orderBy('id')
+                ->first();
+
+            if ($nextMusic) {
+                $this->currentMusicId = $nextMusic->id;
+                $this->isPlaying = true;
+                $this->emit('playMusic', $this->formatMusicUrl($nextMusic->file_url), $nextMusic->title, $this->formatDuration($nextMusic->duration), $nextMusic->album_image);
+            } else {
+                Log::info('No next music found.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Error in next method: ' . $e->getMessage(), ['exception' => $e]);
+            $this->emit('errorOccurred', ['message' => 'Could not play next music.']);
         }
-
-        $currentIndex = $this->musics->search(function ($music) {
-            return $music->id === $this->currentMusicId;
-        });
-
-        $nextIndex = ($currentIndex + 1) % $this->musics->count();
-        $this->currentMusicId = $this->musics[$nextIndex]->id;
-        $this->currentMusic = $this->musics[$nextIndex];
-        $this->isPlaying = true;
-        $this->emit('playMusic', $this->formatMusicUrl($this->musics[$nextIndex]->file_url), $this->musics[$nextIndex]->title, $this->formatDuration($this->musics[$nextIndex]->duration), $this->musics[$nextIndex]->album_image);
     }
 
     public function previous()
     {
-        if ($this->currentMusicId === null) {
-            return;
+        try {
+            if ($this->currentMusicId === null) {
+                return;
+            }
+
+            $currentMusic = Music::find($this->currentMusicId);
+            if (!$currentMusic) {
+                Log::warning('Current music not found.');
+                return;
+            }
+
+            $previousMusic = Music::where('id', '<', $this->currentMusicId)
+                ->orderByDesc('id')
+                ->first();
+
+            if ($previousMusic) {
+                $this->currentMusicId = $previousMusic->id;
+                $this->isPlaying = true;
+                $this->emit('playMusic', $this->formatMusicUrl($previousMusic->file_url), $previousMusic->title, $this->formatDuration($previousMusic->duration), $previousMusic->album_image);
+            } else {
+                Log::info('No previous music found.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Error in previous method: ' . $e->getMessage(), ['exception' => $e]);
+            $this->emit('errorOccurred', ['message' => 'Could not play previous music.']);
         }
-
-        $currentIndex = $this->musics->search(function ($music) {
-            return $music->id === $this->currentMusicId;
-        });
-
-        $previousIndex = ($currentIndex - 1 + $this->musics->count()) % $this->musics->count();
-        $this->currentMusicId = $this->musics[$previousIndex]->id;
-        $this->currentMusic = $this->musics[$previousIndex];
-        $this->isPlaying = true;
-        $this->emit('playMusic', $this->formatMusicUrl($this->musics[$previousIndex]->file_url), $this->musics[$previousIndex]->title, $this->formatDuration($this->musics[$previousIndex]->duration), $this->musics[$previousIndex]->album_image);
     }
 
-    public function updatedSearchTerm()
+    public function toggleFavorite($musicId)
     {
-        $this->resetPage(); 
+        try {
+            $user = auth()->user();
+            $music = Music::find($musicId);
+
+            if ($music) {
+                $isFavorite = $user->favoriteMusics()->where('music_id', $musicId)->exists();
+
+                if ($isFavorite) {
+                    $user->favoriteMusics()->detach($musicId);
+                } else {
+                    $user->favoriteMusics()->attach($musicId);
+                }
+                $this->emit('favoriteUpdated');
+            } else {
+                Log::warning('Music not found with ID: ' . $musicId);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error in toggleFavorite method: ' . $e->getMessage(), ['exception' => $e]);
+            $this->emit('errorOccurred', ['message' => 'Could not update favorite status.']);
+        }
     }
 
     protected function formatMusicUrl($fileUrl)
@@ -95,14 +162,26 @@ class UserMusic extends Component
         return sprintf('%02d:%02d', $minutes, $seconds);
     }
 
+    public function updatedSearchTerm()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
-        $musics = Music::with('album')
-            ->where('title', 'like', '%' . $this->searchTerm . '%')
-            ->paginate(10);
+        try {
+            $musics = Music::with('album')
+                ->where('title', 'like', '%' . $this->searchTerm . '%')
+                ->paginate(10);
 
-        return view('livewire.user-music', [
-            'musics' => $musics,
-        ]);
+            return view('livewire.user-music', [
+                'musics' => $musics,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error in render method: ' . $e->getMessage(), ['exception' => $e]);
+            return view('livewire.user-music', [
+                'musics' => collect(), 
+            ]);
+        }
     }
 }

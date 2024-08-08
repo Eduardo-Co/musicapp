@@ -1,5 +1,4 @@
 <div class="bg-gray-100 text-gray-800 min-h-screen p-10">
-    <!-- Filtro de Pesquisa -->
     <div class="mb-4 flex items-center space-x-4">
         <input 
             type="text" 
@@ -9,7 +8,6 @@
         />
     </div>
 
-    <!-- Header da Tabela -->
     <div class="flex text-gray-600 bg-gray-200 border-b border-gray-300 mb-4">
         <div class="p-2 w-8 flex-shrink-0"></div>
         <div class="p-2 w-8 flex-shrink-0"></div>
@@ -21,17 +19,24 @@
         </div>
     </div>
 
-    <!-- Lista de Músicas -->
     @foreach($musics as $music)
-        <div class="flex items-center border-b border-gray-300 hover:bg-gray-200 {{ $currentMusicId === $music->id ? 'bg-yellow-100' : '' }}" wire:click="play({{ $music->id }})">
-            <div class="p-3 w-8 flex-shrink-0 text-gray-600">
-                <button wire:click.stop="play({{ $music->id }})" class="text-gray-600 hover:text-gray-800">
-                    <i class="fas fa-play"></i>
+        <div 
+            class="flex items-center border-b border-gray-300 hover:bg-gray-200 {{ $currentMusicId === $music->id ? 'bg-yellow-100' : '' }}" 
+            wire:click="play({{ $music->id }})"
+            wire:key="music-{{ $music->id }}"
+        >
+            <div class="p-3 w-16 flex-shrink-0 text-gray-600">
+                <button wire:click.stop="play({{ $music->id }})" class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                    @if($currentMusicId === $music->id && $isPlaying)
+                        <i class="fas fa-pause text-lg"></i>
+                    @else
+                        <i class="fas fa-play text-lg"></i>
+                    @endif
                 </button>
             </div>
-            <div class="p-3 w-8 flex-shrink-0 text-gray-600">
-                <button wire:click.stop="toggleFavorite({{ $music->id }})" class="text-gray-600 hover:text-gray-800">
-                    <i class="fas fa-heart"></i>
+            <div class="p-3 w-16 flex-shrink-0 text-gray-600">
+                <button wire:click.stop="toggleFavorite({{ $music->id }})" class="text-gray-600 hover:text-gray-800 transition-colors duration-300 focus:outline-none">
+                    <i class="fas fa-heart text-lg {{ auth()->user()->favoriteMusics()->where('music_id', $music->id)->exists() ? 'text-red-500 animate-heartbeat' : '' }}"></i>
                 </button>
             </div>
             <div class="p-3 w-full">{{ $music->title }}</div>
@@ -45,12 +50,11 @@
         </div>
     @endforeach
 
-    <!-- Paginação -->
+
     <div class="mt-4">
         {{ $musics->links() }}
     </div>
 
-    <!-- Reprodutor de Música -->
     <div class="fixed bottom-0 bg-white shadow-md rounded-t-lg overflow-hidden p-4" style="width: calc(100% - 120px); margin-right: 100px; z-index: 50;">
         <div class="flex flex-col sm:flex-row items-center relative">
             @if($isPlaying && $currentMusic)
@@ -106,74 +110,100 @@
     </div>
 
     <script>
-        document.addEventListener('livewire:load', function () {
-            let audio = new Audio();
-            let progressBar = document.getElementById('progress-bar');
-            let progressFill = document.getElementById('progress-fill');
-            let timeDisplay = document.getElementById('time-display');
-            let volumeSlider = document.getElementById('volume-slider');
-            let currentMusicUrl = null;
-
-            function updateProgress() {
-                if (audio.duration) {
-                    let progress = (audio.currentTime / audio.duration) * 100;
-                    progressFill.style.width = `${progress}%`;
-                    let currentMinutes = Math.floor(audio.currentTime / 60);
-                    let currentSeconds = Math.floor(audio.currentTime % 60);
-                    let durationMinutes = Math.floor(audio.duration / 60);
-                    let durationSeconds = Math.floor(audio.duration % 60);
-                    timeDisplay.textContent = `${String(currentMinutes).padStart(2, '0')}:${String(currentSeconds).padStart(2, '0')}/${String(durationMinutes).padStart(2, '0')}:${String(durationSeconds).padStart(2, '0')}`;
-                }
+    document.addEventListener('livewire:load', function () {
+        let audio = new Audio();
+        let progressBar = document.getElementById('progress-bar');
+        let progressFill = document.getElementById('progress-fill');
+        let timeDisplay = document.getElementById('time-display');
+        let volumeSlider = document.getElementById('volume-slider');
+        let currentMusicUrl = null;
+        
+        function updateProgress() {
+            if (audio.duration) {
+                let progress = (audio.currentTime / audio.duration) * 100;
+                progressFill.style.width = `${progress}%`;
+                let currentMinutes = Math.floor(audio.currentTime / 60);
+                let currentSeconds = Math.floor(audio.currentTime % 60);
+                let durationMinutes = Math.floor(audio.duration / 60);
+                let durationSeconds = Math.floor(audio.duration % 60);
+                timeDisplay.textContent = `${String(currentMinutes).padStart(2, '0')}:${String(currentSeconds).padStart(2, '0')}/${String(durationMinutes).padStart(2, '0')}:${String(durationSeconds).padStart(2, '0')}`;
             }
+        }
 
-            function updateVolume() {
-                audio.volume = volumeSlider.value;
-                let volumeIcon = document.getElementById('volume-button').querySelector('i');
-                if (audio.volume === 0) {
-                    volumeIcon.classList.remove('fa-volume-up', 'fa-volume-down');
-                    volumeIcon.classList.add('fa-volume-mute');
-                } else if (audio.volume <= 0.5) {
-                    volumeIcon.classList.remove('fa-volume-up', 'fa-volume-mute');
-                    volumeIcon.classList.add('fa-volume-down');
-                } else {
-                    volumeIcon.classList.remove('fa-volume-down', 'fa-volume-mute');
-                    volumeIcon.classList.add('fa-volume-up');
-                }
+        function updateVolume() {
+            audio.volume = volumeSlider.value;
+            let volumeIcon = document.getElementById('volume-button').querySelector('i');
+            if (audio.volume === 0) {
+                volumeIcon.classList.remove('fa-volume-up', 'fa-volume-down');
+                volumeIcon.classList.add('fa-volume-mute');
+            } else if (audio.volume <= 0.5) {
+                volumeIcon.classList.remove('fa-volume-up', 'fa-volume-mute');
+                volumeIcon.classList.add('fa-volume-down');
+            } else {
+                volumeIcon.classList.remove('fa-volume-down', 'fa-volume-mute');
+                volumeIcon.classList.add('fa-volume-up');
             }
+        }
 
-            window.addEventListener('play', function (event) {
-                currentMusicUrl = event.detail.url;
-                audio.src = currentMusicUrl;
+        Livewire.on('playMusic', (url) => {
+            if (currentMusicUrl === url) {
                 audio.play();
-                setInterval(updateProgress, 1000);
-            });
-
-            window.addEventListener('pause', function () {
-                audio.pause();
-            });
-
-            window.addEventListener('togglePlayPause', function () {
-                if (audio.paused) {
-                    audio.play();
-                } else {
-                    audio.pause();
-                }
-            });
-
-            window.addEventListener('stop', function () {
-                audio.pause();
-                audio.currentTime = 0;
-            });
-
-            progressBar.addEventListener('click', function (event) {
-                let rect = progressBar.getBoundingClientRect();
-                let offsetX = event.clientX - rect.left;
-                let progress = offsetX / progressBar.offsetWidth;
-                audio.currentTime = progress * audio.duration;
-            });
-
-            volumeSlider.addEventListener('input', updateVolume);
-            updateVolume();
+            } else {
+                localStorage.setItem('currentTime', audio.currentTime); 
+                audio.src = url;
+                audio.currentTime = localStorage.getItem('currentTime') || 0;
+                audio.play();
+            }
+            currentMusicUrl = url;
+            setInterval(updateProgress, 1000); 
         });
-    </script>
+
+        Livewire.on('pauseMusic', () => {
+                audio.pause();
+                localStorage.setItem('currentTime', audio.currentTime); 
+            });
+
+
+        Livewire.on('updatePlayPause', (isPlaying) => {
+            if (isPlaying) {
+                audio.play();
+            } else {
+                audio.pause();
+                localStorage.setItem('currentTime', audio.currentTime); 
+            }
+        });
+
+        progressBar.addEventListener('click', function (event) {
+            let rect = progressBar.getBoundingClientRect();
+            let offsetX = event.clientX - rect.left;
+            let progress = offsetX / progressBar.offsetWidth;
+            audio.currentTime = progress * audio.duration;
+        });
+
+        volumeSlider.addEventListener('input', updateVolume);
+        updateVolume();
+    });
+
+        </script>     
+        <style>
+            .rotate-animation {
+                animation: rotate 2s linear infinite;
+            }
+
+            @keyframes rotate {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+
+            @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+            }
+
+            .animate-heartbeat {
+            animation: heartbeat 0.6s ease-in-out;
+            }
+
+    </style>
 </div>

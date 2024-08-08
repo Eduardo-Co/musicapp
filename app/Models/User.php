@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
-
     /**
      * The attributes that are mass assignable.
      *
@@ -42,4 +42,11 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+
+    public function favoriteMusics(): BelongsToMany
+    {
+        return $this->belongsToMany(Music::class, 'favorite_music_user', 'user_id', 'music_id');
+    }
+      
 }

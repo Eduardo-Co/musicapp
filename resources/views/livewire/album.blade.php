@@ -35,7 +35,7 @@
                     </svg>
                 </button>
                 <div class="p-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold">{{ $isCreating ? 'Create Music' : 'Edit Music' }}</h3>
+                    <h3 class="text-lg font-semibold">{{ $isCreating ? 'Create Album' : 'Edit Album' }}</h3>
                 </div>
                 <form wire:submit.prevent="save" enctype="multipart/form-data">
                     <div class="p-4">
@@ -121,7 +121,7 @@
                             wire:loading.class="bg-gray-400"
                         >
                             <span wire:loading.block>
-                                {{ $isCreating ? 'Create Music' : 'Update Music' }}
+                                {{ $isCreating ? 'Create Album' : 'Update Album' }}
                             </span>
                         </button>
                     </div>
