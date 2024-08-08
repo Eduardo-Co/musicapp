@@ -16,6 +16,6 @@ class DatabaseSeeder extends Seeder
         \App\Models\User::factory(100)->create();
         \App\Models\Artista::factory(100)->create();
         \App\Models\Music::factory(100)->create();
-        \App\Models\Album::factory(100)->create();
+   
     }
 }
