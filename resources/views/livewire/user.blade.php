@@ -149,8 +149,71 @@
         </div>
     @endif
 
+    @if($viewingUser)
+        <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-40" wire:click.self="closeView">
+            <div class="relative bg-white rounded-lg shadow-lg w-full max-w-lg" @click.stop>
+                <button wire:click="closeView" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900" wire:loading.attr="disabled">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <div class="p-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold">View User</h3>
+                </div>
+                <div class="p-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Name</label>
+                            <input 
+                                type="text" 
+                                value="{{ $viewingUser->name }}" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-100" 
+                                disabled
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Email</label>
+                            <input 
+                                type="text" 
+                                value="{{ $viewingUser->email }}" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-100" 
+                                disabled
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Gender</label>
+                            <input 
+                                type="text" 
+                                value="{{ $viewingUser->gender }}" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-100" 
+                                disabled
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Profile</label>
+                            <input 
+                                type="text" 
+                                value="{{ $viewingUser->profile }}" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-100" 
+                                disabled
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Status</label>
+                            <input 
+                                type="text" 
+                                value="{{ $viewingUser->status }}" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-100" 
+                                disabled
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     @unless($isEditing || $isCreating)
-        <!-- Botão Adicionar Usuário -->
         <div class="mb-4 flex items-center space-x-4">
             <input 
                 type="text" 
@@ -203,6 +266,15 @@
                                 >
                                     Delete
                                 </button>
+                                <button 
+                                    wire:click="view({{ $user->id }})" 
+                                    class="bg-gray-600 text-white px-3 py-1 rounded-lg shadow hover:bg-gray-900"
+                                    wire:loading.attr="disabled"
+                                    >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5c4.28 0 7.71 2.88 8.8 6.5-1.09 3.62-4.52 6.5-8.8 6.5s-7.71-2.88-8.8-6.5C4.29 7.38 7.72 4.5 12 4.5zM12 12a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"></path>
+                                </svg>
+                            </button>
                             </td>
                         </tr>
                     @endforeach

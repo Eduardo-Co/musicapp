@@ -13,18 +13,30 @@ class Artista extends Component
     use WithPagination, WithFileUploads;
 
     public $nome;
-    public $genero; // Corrigido para singular
+    public $genero; 
     public $foto_url;
     public $selectedArtistaId;
     public $searchTerm = '';
     public $isEditing = false;
     public $isCreating = false;
+    public $viewingArtista = null;
 
     protected $rules = [
         'nome' => 'required|string|max:255',
         'genero' => 'required|string|max:50',
         'foto_url' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
     ];
+
+    public function view($artistaId)
+    {
+        $this->viewingArtista = ArtistaModel::findOrFail($artistaId);
+    }
+
+    public function closeView()
+    {
+        $this->viewingArtista = null;
+    }
+
 
     public function updatingSearchTerm()
     {

@@ -19,8 +19,9 @@ class User extends Component
     public $profile;
     public $selectedUserId;
     public $searchTerm = '';
-    public $isEditing = false; // indicador para controle da edição
-    public $isCreating = false; // indicador para controle da criação
+    public $isEditing = false; 
+    public $isCreating = false; 
+    public $viewingUser = false;
 
     protected $rules = [
         'name' => 'required|string|max:255',
@@ -30,6 +31,17 @@ class User extends Component
         'gender' => 'required|string|max:10',
         'profile' => 'required|string|max:255',
     ];
+
+    public function view($userId)
+    {
+        $this->viewingUser = UserModel::findOrFail($userId);
+    }
+
+    public function closeView()
+    {
+        $this->viewingUser = null;
+    }
+
 
     public function updatingSearchTerm()
     {

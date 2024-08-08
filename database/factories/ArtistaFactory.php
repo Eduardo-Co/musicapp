@@ -4,22 +4,17 @@ namespace Database\Factories;
 
 use App\Models\Artista;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 class ArtistaFactory extends Factory
 {
     protected $model = Artista::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array
-     */
     public function definition()
     {
         return [
-            'nome' => $this->faker->name,
+            'nome' => $this->faker->name(), 
             'genero' => $this->faker->randomElement(['Rock', 'Pop', 'Hip Hop', 'R&B', 'Country', 'Jazz', 'Reggae', 'Electronic', 'Classical']),
+            'foto_url' => $this->faker->imageUrl(640, 480, 'people'), 
         ];
     }
 }
