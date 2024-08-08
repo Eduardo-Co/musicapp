@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'Laravel AdminLTE 3',
+    'title' => 'Music App',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -230,9 +230,9 @@ return [
             'topnav' => true,
         ],
         [
-            'text' => 'Home',
+            'text' => 'All Musics',
             'url'  => 'home',
-            'icon' => 'fas fa-house-user',
+            'icon' => 'fas fa-volume-up',
         ],
         [
             'text' => 'Dashboard',

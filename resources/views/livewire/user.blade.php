@@ -4,7 +4,7 @@
             @if(session()->has('message'))
                 <span class="text-green-600 inline-flex items-center">
                     <strong>{{ session('message') }}</strong>
-                    <button class="ml-4 text-green-600 hover:text-green-900">
+                    <button onclick="closeToastrMsg()" class="ml-4 text-green-600 hover:text-green-900">
                         <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -15,7 +15,7 @@
             @if(session()->has('message-deleted'))
                 <span class="text-red-600 inline-flex items-center">
                     <strong>{{ session('message-deleted') }}</strong>
-                    <button class="ml-4 text-red-600 hover:text-red-900">
+                    <button onclick="closeToastrMsg()" class="ml-4 text-red-600 hover:text-red-900">
                         <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -324,4 +324,12 @@
             @endif
         </div>
     </div>
+    <script>
+        function closeToastrMsg() {
+            const toastrMsg = document.getElementById('toastrMsg');
+            if (toastrMsg) {
+                toastrMsg.style.display = 'none';
+            }
+        }
+    </script>  
 </div>

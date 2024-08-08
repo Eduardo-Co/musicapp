@@ -21,7 +21,7 @@ class UserMusic extends Component
     public function play($musicId)
     {
         if ($this->currentMusicId === $musicId && $this->isPlaying) {
-            return; // Evitar chamada desnecessária
+            return;
         }
 
         try {

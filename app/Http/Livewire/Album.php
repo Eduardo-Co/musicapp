@@ -165,11 +165,16 @@ class Album extends Component
     public function delete($albumId)
     {
         $album = AlbumModel::findOrFail($albumId);
-        if ($album->foto_url) {
-            Storage::disk('public')->delete($album->foto_url);
+
+        if ($album->musics()->exists()) {
+            session()->flash('message-deleted', 'O álbum não pode ser deletado porque possui músicas associadas.');    
+        }else {
+            if ($album->foto_url) {
+                Storage::disk('public')->delete($album->foto_url);
+            }
+            $album->artistas()->detach();
+            $album->delete();
+            session()->flash('message-deleted', 'Álbum deletado com sucesso.');
         }
-        $album->artistas()->detach();
-        $album->delete();
-        session()->flash('message-deleted', 'Álbum deletado com sucesso.');
     }
 }

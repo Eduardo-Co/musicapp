@@ -126,10 +126,17 @@ class Artista extends Component
     public function delete($artistaId)
     {
         $artista = ArtistaModel::findOrFail($artistaId);
-        if ($artista->foto_url) {
-            Storage::disk('public')->delete($artista->foto_url);
+
+
+        if ($artista->albums()->exists()) {
+            session()->flash('message-deleted', 'O artista não pode ser deletado porque está relacionado a um ou mais álbuns.');
+        }else{
+
+            if ($artista->foto_url) {
+                Storage::disk('public')->delete($artista->foto_url);
+            }
+            $artista->delete();
+            session()->flash('message-deleted', 'Artista deletado com sucesso.');
         }
-        $artista->delete();
-        session()->flash('message-deleted', 'Artista deletado com sucesso.');
     }
 }
