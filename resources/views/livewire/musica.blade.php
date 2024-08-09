@@ -159,6 +159,42 @@
         </div>
     @endif
 
+    @if($showDeleteModal)
+        <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" wire:click.self="closeDeleteModal">
+            <div class="relative bg-white rounded-lg shadow-lg w-full max-w-md" @click.stop>
+                <div class="p-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold">Confirm Deletion</h3>
+                </div>
+                <form wire:submit.prevent="delete({{ $musicToDelete }})">
+                    <div class="p-4">
+                        <p class="text-gray-600">Are you sure you want to delete this music?</p>
+                        <div class="mt-4 flex justify-end space-x-2">
+                            <button 
+                                type="button" 
+                                wire:click="closeDeleteModal" 
+                                class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg shadow hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                type="submit"
+                                class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+
+    <div x-data="deleteHandler" x-init="init()" x-show="isDeleting" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div class="bg-white p-4 rounded-lg shadow-lg">
+            <p>Deletando...</p>
+        </div>
+    </div>
+
     <!-- visualizar -->
     @if($viewingMusic)
         <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-40" wire:click.self="closeView">
@@ -302,7 +338,7 @@
                                     Edit
                                 </button>
                                 <button 
-                                    wire:click="delete({{ $music->id }})" 
+                                    wire:click="confirmDelete({{ $music->id }})" 
                                     class="bg-red-600 text-white px-3 py-1 rounded-lg shadow hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500"
                                     wire:loading.attr="disabled"
                                 >
@@ -366,12 +402,27 @@
                 @endif
             </div>
         </div>
+        <script src="https://unpkg.com/alpinejs" defer></script>
         <script>
-            function closeToastrMsg() {
-                const toastrMsg = document.getElementById('toastrMsg');
-                if (toastrMsg) {
-                    toastrMsg.style.display = 'none';
-                }
-            }
-        </script>      
+            document.addEventListener('alpine:init', () => {
+                Alpine.data('deleteHandler', () => ({
+                    isDeleting: false,
+                    init() {
+                        Livewire.on('delete-start', () => {
+                            this.isDeleting = true;
+                        });
+
+                        Livewire.on('delete-finish', () => {
+                            this.isDeleting = false;
+                            alert('Música deletada com sucesso!');
+                        });
+
+                        Livewire.on('delete-error', () => {
+                            this.isDeleting = false;
+                            alert('Erro ao deletar a música!');
+                        });
+                    }
+                }));
+            });
+</script>   
     </div>

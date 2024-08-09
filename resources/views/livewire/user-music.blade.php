@@ -57,9 +57,12 @@
 
     <div class="fixed bottom-0 bg-white shadow-md rounded-t-lg overflow-hidden p-4" style="width: calc(100% - 120px); margin-right: 100px; z-index: 50;">
         <div class="flex flex-col sm:flex-row items-center relative">
-            @if($isPlaying && $currentMusic)
+            @if($isPlaying || $currentMusic)
                 <div class="flex-shrink-0">
-                    <img id="music-image" src="{{ $currentMusic->album->foto_url ? asset('storage/' . $currentMusic->album->foto_url) : '' }}" alt="Album Art" class="w-16 h-16 rounded-full object-cover rotate-animation">
+                    <img id="music-image" 
+                        src="{{ $currentMusic->album->foto_url ? asset('storage/' . $currentMusic->album->foto_url) : '' }}" 
+                        alt="Album Art" 
+                        class="w-16 h-16 rounded-full object-cover {{ $isPlaying ? 'rotate-animation' : 'stop-rotation' }}">
                 </div>
                 <div class="mr-5">
                     <h3 id="music-title" class="text-lg font-semibold text-gray-800 mb-1 ml-1">Current Music: {{ $currentMusic->title }}</h3>
@@ -188,6 +191,11 @@
         <style>
             .rotate-animation {
                 animation: rotate 2s linear infinite;
+            }
+
+            .stop-rotation {
+                animation: none; 
+                transition: transform 3s ease-out; 
             }
 
             @keyframes rotate {

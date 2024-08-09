@@ -26,6 +26,8 @@ class Musica extends Component
     public $isEditing = false;
     public $isCreating = false;
     public $viewingMusic = null;
+    public $musicToDelete;
+    public $showDeleteModal = false;	
 
     protected $rules = [
         'title' => 'required|string|max:255',
@@ -151,11 +153,36 @@ class Musica extends Component
 
     public function delete($musicId)
     {
-        $music = MusicModel::findOrFail($musicId);
-        if ($music->file_url) {
-            Storage::disk('public')->delete($music->file_url);
+        try {
+            $this->dispatchBrowserEvent('delete-start');
+
+            $music = MusicModel::findOrFail($musicId);
+
+            if ($music->file_url) {
+                Storage::disk('public')->delete($music->file_url);
+            }
+
+            $music->delete();
+            $this->musicToDelete = null;
+            $this->showDeleteModal = false;
+
+            $this->dispatchBrowserEvent('delete-finish');
+
+            session()->flash('message-deleted', 'Música deletada com sucesso.');
+        } catch (\Exception $e) {
+            $this->dispatchBrowserEvent('delete-error');
+            session()->flash('message-error', 'Erro ao deletar a música.');
+        } finally {
         }
-        $music->delete();
-        session()->flash('message-deleted', 'Música deletada com sucesso.');
+    }
+    public function confirmDelete($musicId)
+    {
+        $this->musicToDelete = $musicId;
+        $this->showDeleteModal = true;
+    }
+    public function closeDeleteModal()
+    {
+        $this->showDeleteModal = false;
+        $this->musicToDelete = null;
     }
 }
