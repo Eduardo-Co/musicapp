@@ -128,13 +128,34 @@ class User extends Component
         $this->gender = '';
         $this->profile = '';
         $this->selectedUserId = null;
-        $this->isEditing = false; // desativa a edição
-        $this->isCreating = false; // desativa a criação
+        $this->isEditing = false; 
+        $this->isCreating = false; 
     }
-
     public function delete($userId)
     {
-        UserModel::findOrFail($userId)->delete();
-        session()->flash('message-deleted', 'User deleted successfully.');
+        try {
+            $user = UserModel::findOrFail($userId);
+    
+            if ($user->playlists()->exists()) {
+                session()->flash('message-error', 'Não é possível deletar o usuário, pois ele possui playlists.');
+                return;
+            }
+    
+            if ($user->albums()->exists()) {
+                session()->flash('message-error', 'Não é possível deletar o usuário, pois ele possui álbuns.');
+                return;
+            }
+    
+            if ($user->favoriteMusics()->exists()) {
+                session()->flash('message-error', 'Não é possível deletar o usuário, pois ele tem músicas favoritas.');
+                return;
+            }
+    
+            $user->delete();
+            session()->flash('message-deleted', 'Usuário deletado com sucesso.');
+            
+        } catch (\Exception $e) {
+            session()->flash('message-error', 'Erro ao deletar o usuário.');
+        }
     }
 }

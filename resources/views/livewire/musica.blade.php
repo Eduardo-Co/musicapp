@@ -424,5 +424,11 @@
                     }
                 }));
             });
-</script>   
-    </div>
+        function closeToastrMsg() {
+            const toastrMsg = document.getElementById('toastrMsg');
+            if (toastrMsg) {
+                toastrMsg.style.display = 'none';
+            }
+        }
+    </script>   
+</div>

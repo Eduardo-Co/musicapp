@@ -116,7 +116,7 @@ class Artista extends Component
     public function resetInputFields()
     {
         $this->nome = '';
-        $this->genero = ''; // Corrigido para 'genero'
+        $this->genero = ''; 
         $this->foto_url = null;
         $this->selectedArtistaId = null;
         $this->isEditing = false;

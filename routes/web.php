@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PlaylistController;
 
 
 
@@ -40,7 +41,18 @@ Route::middleware(['auth'])->group(function () {
         return view('musics.favoritas');
     })->name('favoritas');
 
+    //playlists
 
+    Route::get('/playlists', function () {
+        return view('playlists.index');
+    })->name('playlists');
+
+    Route::post('/playlists', function () {
+        return view('playlists.index');
+    })->name('playlists');
+
+    Route::get('/playlists/{id}', [PlaylistController::class, 'show'])->name('playlist.show');
+    
     //rota admin
     Route::middleware(['is_admin'])->group(function () {
         Route::get('/dashboard', [HomeController::class, 'dashboard'])

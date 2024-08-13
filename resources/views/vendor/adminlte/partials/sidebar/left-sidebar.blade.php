@@ -24,11 +24,14 @@
                 @can('is_admin')
                     <hr class="my-4 border-t border-white">
                     <div class="text-center">
-                        <p class="text-white">User Painel</p>
+                        <p class="text-white flex items-center justify-center">
+                            <i class="fas fa-user-cog mr-2"></i>
+                            User Painel
+                        </p>
                         <br>
                     </div>
                 @endcan
-
+            
                 @auth
                     <li class="nav-item">
                         <a href="{{ route('home') }}" class="nav-link">
@@ -52,17 +55,29 @@
                     </li>
                 @endauth
 
+                
+                @auth
+                    <li class="nav-item">
+                        <a href="{{ route('playlists') }}" class="nav-link">
+                            <i class="nav-icon fas fa-list"></i>
+                            <p>
+                                Playlists
+                            </p>
+                        </a>
+                    </li>
+                @endauth
+
 
                 @can('is_admin')
-    <hr class="my-4 border-t border-white">
-    <div class="text-center">
-        <p class="text-white">
-            <i class="fas fa-user-shield"></i> {{-- Administrator icon --}}
-            Admin Panel
-        </p>
-        <br>
-    </div>
-@endcan
+                    <hr class="my-4 border-t border-white">
+                    <div class="text-center">
+                        <p class="text-white">
+                            <i class="fas fa-user-shield"></i>
+                            Admin Panel
+                        </p>
+                        <br>
+                    </div>
+                @endcan
 
 
                 @each('adminlte::partials.sidebar.menu-item', $adminlte->menu('sidebar'), 'item')

@@ -155,26 +155,39 @@ class Musica extends Component
     {
         try {
             $this->dispatchBrowserEvent('delete-start');
-
+    
             $music = MusicModel::findOrFail($musicId);
-
+            $user = auth()->user();
+    
+            if ($music->playlists()->exists()) {
+                session()->flash('message-error', 'Não é possível deletar a música, pois ela está em uma playlist.');
+                $this->dispatchBrowserEvent('delete-error');
+                return;
+            }
+    
+            if ($user->favoriteMusics()->where('music_id', $musicId)->exists()) {
+                session()->flash('message-error', 'Não é possível deletar a música, pois ela está marcada como favorita por algum usuário.');
+                $this->dispatchBrowserEvent('delete-error');
+                return;
+            }
+    
             if ($music->file_url) {
                 Storage::disk('public')->delete($music->file_url);
             }
-
+    
             $music->delete();
             $this->musicToDelete = null;
             $this->showDeleteModal = false;
-
+    
             $this->dispatchBrowserEvent('delete-finish');
-
             session()->flash('message-deleted', 'Música deletada com sucesso.');
+    
         } catch (\Exception $e) {
             $this->dispatchBrowserEvent('delete-error');
             session()->flash('message-error', 'Erro ao deletar a música.');
-        } finally {
-        }
+        } 
     }
+    
     public function confirmDelete($musicId)
     {
         $this->musicToDelete = $musicId;

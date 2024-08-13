@@ -5,12 +5,11 @@ namespace App\Http\Livewire;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Music;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Playlist;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
-
-class UserFavority extends Component
+class PlaylistDetails extends Component
 {
     use WithPagination;
 
@@ -19,10 +18,12 @@ class UserFavority extends Component
     public $currentMusic = null;
     public $searchTerm = '';
     protected $paginationTheme = 'tailwind';
-    public $showPlaylists = false;
-    public $playlists = [];
-    public $currentPlaylistPage = 1;
-    public $searchPlaylist = '';
+    public $playlistId = null; 
+
+    public function mount($playlistId)
+    {
+        $this->playlistId = $playlistId;
+    }
 
     public function play($musicId)
     {
@@ -57,26 +58,7 @@ class UserFavority extends Component
             $this->emit('errorOccurred', ['message' => 'Could not pause music.']);
         }
     }
-    public function togglePlaylist()
-    {
-        $this->showPlaylists = true;
-        $this->currentPlaylistPage = 1;
-        $this->loadPlaylists();
-    }
 
-    public function nextPlaylist()
-    {
-        $this->currentPlaylistPage++;
-        $this->loadPlaylists();
-    }
-
-    public function previousPlaylist()
-    {
-        if ($this->currentPlaylistPage > 1) {
-            $this->currentPlaylistPage--;
-            $this->loadPlaylists();
-        }
-    }
     public function togglePlayPause()
     {
         try {
@@ -94,40 +76,25 @@ class UserFavority extends Component
     {
         try {
             if ($this->currentMusicId === null) {
-                Log::warning('No current music ID set.');
                 return;
             }
 
-            $user = auth()->user();
-
-            $query = $user ? $user->favoriteMusics()->with('album') : Music::query();
-
-            if ($this->searchTerm) {
-                $query->where(function ($query) {
-                    $query->where('musics.title', 'like', '%' . $this->searchTerm . '%')
-                        ->orWhereHas('album', function ($q) {
-                            $q->where('albums.name', 'like', '%' . $this->searchTerm . '%');
-                        });
-                });
-            }
-
-            $currentMusicIndex = $query->pluck('musics.id')->search($this->currentMusicId);
-            
-            if ($currentMusicIndex === false) {
-                Log::warning('Current music not found in filtered favorites.');
+            $currentMusic = Music::find($this->currentMusicId);
+            if (!$currentMusic) {
+                Log::warning('Current music not found.');
                 return;
             }
 
-            $nextMusicId = $query->pluck('musics.id')->slice($currentMusicIndex + 1, 1)->first();
+            $nextMusic = Music::where('id', '>', $this->currentMusicId)
+                ->orderBy('id')
+                ->first();
 
-            if ($nextMusicId) {
-                $nextMusic = $query->find($nextMusicId);
+            if ($nextMusic) {
                 $this->currentMusicId = $nextMusic->id;
                 $this->isPlaying = true;
                 $this->emit('playMusic', $this->formatMusicUrl($nextMusic->file_url), $nextMusic->title, $this->formatDuration($nextMusic->duration), $nextMusic->album_image);
-                Log::info('Playing next music: ' . $nextMusic->id);
             } else {
-                Log::info('No next music found in filtered favorites.');
+                Log::info('No next music found.');
             }
         } catch (\Exception $e) {
             Log::error('Error in next method: ' . $e->getMessage(), ['exception' => $e]);
@@ -135,45 +102,29 @@ class UserFavority extends Component
         }
     }
 
-    
     public function previous()
     {
         try {
             if ($this->currentMusicId === null) {
-                Log::warning('No current music ID set.');
                 return;
             }
 
-            $user = auth()->user();
-
-            $query = $user ? $user->favoriteMusics()->with('album') : Music::query();
-
-            if ($this->searchTerm) {
-                $query->where(function ($query) {
-                    $query->where('musics.title', 'like', '%' . $this->searchTerm . '%')
-                        ->orWhereHas('album', function ($q) {
-                            $q->where('albums.name', 'like', '%' . $this->searchTerm . '%');
-                        });
-                });
-            }
-
-            $currentMusicIndex = $query->pluck('musics.id')->search($this->currentMusicId);
-
-            if ($currentMusicIndex === false) {
-                Log::warning('Current music not found in filtered favorites.');
+            $currentMusic = Music::find($this->currentMusicId);
+            if (!$currentMusic) {
+                Log::warning('Current music not found.');
                 return;
             }
 
-            $previousMusicId = $query->pluck('musics.id')->slice($currentMusicIndex - 1, 1)->first();
+            $previousMusic = Music::where('id', '<', $this->currentMusicId)
+                ->orderByDesc('id')
+                ->first();
 
-            if ($previousMusicId) {
-                $previousMusic = $query->find($previousMusicId);
+            if ($previousMusic) {
                 $this->currentMusicId = $previousMusic->id;
                 $this->isPlaying = true;
                 $this->emit('playMusic', $this->formatMusicUrl($previousMusic->file_url), $previousMusic->title, $this->formatDuration($previousMusic->duration), $previousMusic->album_image);
-                Log::info('Playing previous music: ' . $previousMusic->id);
             } else {
-                Log::info('No previous music found in filtered favorites.');
+                Log::info('No previous music found.');
             }
         } catch (\Exception $e) {
             Log::error('Error in previous method: ' . $e->getMessage(), ['exception' => $e]);
@@ -221,82 +172,55 @@ class UserFavority extends Component
     {
         $this->resetPage();
     }
-    public function updatedSearchPlaylist()
-    {
-        $this->loadPlaylists();
-    }
 
-    protected function loadPlaylists()
-    {
-        $query = Auth::user()->playlists();
-    
-        if ($this->searchPlaylist) {
-            $query->where('name', 'like', '%' . $this->searchPlaylist . '%');
-        }
-    
-        $this->playlists = $query
-            ->skip(($this->currentPlaylistPage - 1) * 6)
-            ->take(6)
-            ->get();
-    }
-    public function addToPlaylist($playlistId)
+    public function removeFromPlaylist($musicId)
     {
         try {
-            $user = auth()->user();
-            $music = Music::find($this->currentMusicId);
-
-            if (!$music) {
-                Log::warning('Music not found with ID: ' . $this->currentMusicId);
-                $this->emit('errorOccurred', ['message' => 'Music not found.']);
-                return;
-            }
-
-            $playlist = Playlist::find($playlistId);
-
+            $playlist = Playlist::find($this->playlistId);
             if (!$playlist) {
-                Log::warning('Playlist not found with ID: ' . $playlistId);
+                Log::warning('Playlist not found with ID: ' . $this->playlistId);
                 $this->emit('errorOccurred', ['message' => 'Playlist not found.']);
                 return;
             }
 
-            $playlist->musics()->attach($music->id);
+            $music = Music::find($musicId);
+            if (!$music) {
+                Log::warning('Music not found with ID: ' . $musicId);
+                $this->emit('errorOccurred', ['message' => 'Music not found.']);
+                return;
+            }
 
-            session()->flash('message', 'Adicionado a playlist com sucesso');
-            
+            $playlist->musics()->detach($musicId);
+
+            session()->flash('message', 'Removido da playlist com sucesso');
+
         } catch (\Exception $e) {
-            Log::error('Error in addToPlaylist method: ' . $e->getMessage(), ['exception' => $e]);
-            $this->emit('errorOccurred', ['message' => 'Could not add music to playlist.']);
+            Log::error('Error in removeFromPlaylist method: ' . $e->getMessage(), ['exception' => $e]);
+            $this->emit('errorOccurred', ['message' => 'Could not remove music from playlist.']);
         }
     }
 
     public function render()
     {
         try {
-            $user = auth()->user();
-            $query = $user ? $user->favoriteMusics()->with('album') : Music::query();
+            $query = Music::with('album')->where('title', 'like', '%' . $this->searchTerm . '%');
 
-            if ($this->searchTerm) {
-                $query->where(function ($query) {
-                    $query->where('title', 'like', '%' . $this->searchTerm . '%')
-                        ->orWhereHas('album', function ($q) {
-                            $q->where('name', 'like', '%' . $this->searchTerm . '%');
-                        });
+            if ($this->playlistId) {
+                $query->whereHas('playlists', function ($q) {
+                    $q->where('playlists.id', $this->playlistId);
                 });
             }
 
-            $playlists = $this->showPlaylists ? $this->playlists : [];
+            $musics = $query->paginate(10);
 
-            $favoriteMusics = $query->paginate(6);
 
-            return view('livewire.user-favority', [
-                'favoriteMusics' => $favoriteMusics,
-                'playlists' => $playlists,
+            return view('livewire.playlist-details', [
+                'musics' => $musics,
             ]);
         } catch (\Exception $e) {
             Log::error('Error in render method: ' . $e->getMessage(), ['exception' => $e]);
-            return view('livewire.user-favority', [
-                'favoriteMusics' => collect(),
-                'playlists' => [],
+            return view('livewire.playlist-details', [
+                'musics' => collect(),
             ]);
         }
     }

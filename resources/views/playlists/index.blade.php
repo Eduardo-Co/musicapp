@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Albuns')
+@section('title', ' Playlists')
 
 
 @section('css')
@@ -8,7 +8,7 @@
 @stop
 
 @section('content')
-   <livewire:album/>
+   <livewire:playlists/>
     @livewireScripts
 @stop
 

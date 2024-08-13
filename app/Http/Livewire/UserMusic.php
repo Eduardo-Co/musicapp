@@ -5,6 +5,8 @@ namespace App\Http\Livewire;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Music;
+use App\Models\Playlist;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class UserMusic extends Component
@@ -15,8 +17,11 @@ class UserMusic extends Component
     public $isPlaying = false;
     public $currentMusic = null;
     public $searchTerm = '';
-
+    public $showPlaylists = false;
     protected $paginationTheme = 'tailwind';
+    public $playlists = [];
+    public $currentPlaylistPage = 1;
+    public $searchPlaylist = '';
 
     public function play($musicId)
     {
@@ -63,6 +68,27 @@ class UserMusic extends Component
         } catch (\Exception $e) {
             Log::error('Error in togglePlayPause method: ' . $e->getMessage(), ['exception' => $e]);
             $this->emit('errorOccurred', ['message' => 'Could not toggle play/pause.']);
+        }
+    }
+
+    public function togglePlaylist()
+    {
+        $this->showPlaylists = true;
+        $this->currentPlaylistPage = 1;
+        $this->loadPlaylists();
+    }
+
+    public function nextPlaylist()
+    {
+        $this->currentPlaylistPage++;
+        $this->loadPlaylists();
+    }
+
+    public function previousPlaylist()
+    {
+        if ($this->currentPlaylistPage > 1) {
+            $this->currentPlaylistPage--;
+            $this->loadPlaylists();
         }
     }
 
@@ -166,21 +192,73 @@ class UserMusic extends Component
     {
         $this->resetPage();
     }
+    
+    public function updatedSearchPlaylist()
+    {
+        $this->loadPlaylists();
+    }
 
+    protected function loadPlaylists()
+    {
+        $query = Auth::user()->playlists();
+    
+        if ($this->searchPlaylist) {
+            $query->where('name', 'like', '%' . $this->searchPlaylist . '%');
+        }
+    
+        $this->playlists = $query
+            ->skip(($this->currentPlaylistPage - 1) * 6)
+            ->take(6)
+            ->get();
+    }
+    public function addToPlaylist($playlistId)
+    {
+        try {
+            $user = auth()->user();
+            $music = Music::find($this->currentMusicId);
+
+            if (!$music) {
+                Log::warning('Music not found with ID: ' . $this->currentMusicId);
+                $this->emit('errorOccurred', ['message' => 'Music not found.']);
+                return;
+            }
+
+            $playlist = Playlist::find($playlistId);
+
+            if (!$playlist) {
+                Log::warning('Playlist not found with ID: ' . $playlistId);
+                $this->emit('errorOccurred', ['message' => 'Playlist not found.']);
+                return;
+            }
+
+            $playlist->musics()->attach($music->id);
+
+            session()->flash('message', 'Adicionado a playlist com sucesso');
+        } catch (\Exception $e) {
+            Log::error('Error in addToPlaylist method: ' . $e->getMessage(), ['exception' => $e]);
+            $this->emit('errorOccurred', ['message' => 'Could not add music to playlist.']);
+        }
+    }
     public function render()
     {
         try {
             $musics = Music::with('album')
                 ->where('title', 'like', '%' . $this->searchTerm . '%')
-                ->paginate(10);
+                ->paginate(6);
+
+            $playlists = $this->showPlaylists ? $this->playlists : [];
 
             return view('livewire.user-music', [
                 'musics' => $musics,
+                'playlists' => $playlists,
+                'showPlaylists' => $this->showPlaylists
             ]);
         } catch (\Exception $e) {
             Log::error('Error in render method: ' . $e->getMessage(), ['exception' => $e]);
             return view('livewire.user-music', [
-                'musics' => collect(), 
+                'musics' => collect(),
+                'playlists' => [],
+                'showPlaylists' => $this->showPlaylists
             ]);
         }
     }

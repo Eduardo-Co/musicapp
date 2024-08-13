@@ -9,12 +9,13 @@
     </div>
 
     <div class="flex text-gray-600 bg-gray-200 border-b border-gray-300 mb-4">
-        <div class="p-2 w-8 flex-shrink-0"></div>
-        <div class="p-2 w-8 flex-shrink-0"></div>
+        <div class="p-2 w-16 flex-shrink-0"></div>
+        <div class="p-2 w-16 flex-shrink-0"></div>
+        <div class="p-2 w-16 flex-shrink-0"></div>
         <div class="p-2 w-full font-medium">Title</div>
         <div class="p-2 w-full font-medium">Artist</div>
         <div class="p-2 w-full font-medium">Album</div>
-        <div class="p-2 w-12 flex-shrink-0 text-right font-medium">
+        <div class="p-2 w-24 text-right font-medium">
             <i class="fas fa-clock"></i>
         </div>
     </div>
@@ -39,6 +40,11 @@
                     <i class="fas fa-heart text-lg {{ auth()->user()->favoriteMusics()->where('music_id', $music->id)->exists() ? 'text-red-500 animate-heartbeat' : '' }}"></i>
                 </button>
             </div>
+            <div class="p-3 w-16 flex-shrink-0 text-gray-600 flex justify-center">
+                <button class="focus:outline-none text-gray-600 hover:text-gray-800" wire:click="togglePlaylist">
+                    <i class="fas fa-bars text-lg"></i>
+                </button>
+            </div>
             <div class="p-3 w-full">{{ $music->title }}</div>
             <div class="p-3 w-full">
                 @foreach ($music->album->artistas as $artista)
@@ -54,6 +60,89 @@
     <div class="mt-4">
         {{ $favoriteMusics->links() }}
     </div>
+
+    @if($showPlaylists)
+        <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" wire:click.self="$set('showPlaylists', false)">
+            <div class="bg-white p-6 rounded-lg shadow-lg max-w-4xl w-full relative">
+                @if(session()->has('message') || session()->has('message-deleted'))
+                    <div id="toastrMsg" class="mb-4 p-4 rounded-lg @if(session()->has('message')) bg-green-100 border-green-300 @elseif(session()->has('message-deleted')) bg-red-100 border-red-300 @endif">
+                        @if(session()->has('message'))
+                            <span class="text-green-600 inline-flex items-center">
+                                <strong>{{ session('message') }}</strong>
+                                <button onclick="closeToastrMsg()" class="ml-4 text-green-600 hover:text-green-900">
+                                    <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </span>
+                        @endif
+                        
+                        @if(session()->has('message-deleted'))
+                            <span class="text-red-600 inline-flex items-center">
+                                <strong>{{ session('message-deleted') }}</strong>
+                                <button onclick="closeToastrMsg()" class="ml-4 text-red-600 hover:text-red-900">
+                                    <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </span>
+                        @endif
+                    </div>
+                @endif
+                <h1 class="text-2xl font-semibold mb-4">Playlists</h1>
+                <div class="mb-4">
+                    <input 
+                        type="text" 
+                        wire:model.debounce.300ms="searchPlaylist" 
+                        placeholder="Pesquisar playlists..." 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                @if($playlists->isEmpty())
+                    <div class="flex flex-col items-center justify-center text-center">
+                        <span class="text-4xl mb-2">😞</span>
+                        <p class="text-gray-600">Não há nenhuma playlist disponível.</p>
+                    </div>
+                @else
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                        @foreach ($playlists as $playlist)
+                            <div class="relative group bg-white p-4 rounded-lg shadow-md border border-gray-200 overflow-hidden">
+                                <h3 class="text-xl font-semibold mb-2">{{ $playlist->name }}</h3>
+                                <p class="text-gray-600 mb-4">{{ $playlist->description }}</p>
+                                <div class="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <button wire:loading.attr="disabled" wire:click="addToPlaylist({{ $playlist->id }})" class="text-green-500 text-3xl transition-colors duration-300 hover:text-green-700">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="absolute inset-y-0 left-0 flex items-center opacity-50 hover:opacity-100 transition-opacity duration-300">
+                        @if($currentPlaylistPage > 1)
+                            <button wire:loading.attr="disabled" wire:click="previousPlaylist" class="text-blue-600 font-semibold hover:text-blue-800 focus:outline-none transition duration-300">
+                                <i class="fas fa-chevron-left text-3xl"></i>
+                            </button>
+                        @endif
+                    </div>
+                    <div class="absolute inset-y-0 right-0 flex items-center opacity-50 hover:opacity-100 transition-opacity duration-300">
+                        @if(Auth::user()->playlists->count() > $currentPlaylistPage * 6)
+                            <button wire:loading.attr="disabled" wire:click="nextPlaylist" class="text-blue-600 font-semibold hover:text-blue-800 focus:outline-none transition duration-300">
+                                <i class="fas fa-chevron-right text-3xl"></i>
+                            </button>
+                        @endif
+                    </div>
+                @endif
+
+                <button wire:loading.attr="disabled" wire:click="$set('showPlaylists', false)" class="mt-4 px-4 py-2 bg-gray-500 text-white rounded opacity-75 hover:opacity-100 focus:outline-none relative">
+                    <span wire:loading.remove wire:target="$set('showPlaylists', false)">
+                        Fechar
+                    </span>
+                </button>
+            </div>
+        </div>
+    @endif
+
 
     <div class="fixed bottom-0 bg-white shadow-md rounded-t-lg overflow-hidden p-4" style="width: calc(100% - 120px); margin-right: 100px; z-index: 50;">
         <div class="flex flex-col sm:flex-row items-center relative">
@@ -108,102 +197,106 @@
             </div>
         </div>
     </div>
-
     <script>
-    document.addEventListener('livewire:load', function () {
-        let audio = new Audio();
-        let progressBar = document.getElementById('progress-bar');
-        let progressFill = document.getElementById('progress-fill');
-        let timeDisplay = document.getElementById('time-display');
-        let volumeSlider = document.getElementById('volume-slider');
-        let currentMusicUrl = null;
-        
-        function updateProgress() {
-            if (audio.duration) {
-                let progress = (audio.currentTime / audio.duration) * 100;
-                progressFill.style.width = `${progress}%`;
-                let currentMinutes = Math.floor(audio.currentTime / 60);
-                let currentSeconds = Math.floor(audio.currentTime % 60);
-                let durationMinutes = Math.floor(audio.duration / 60);
-                let durationSeconds = Math.floor(audio.duration % 60);
-                timeDisplay.textContent = `${String(currentMinutes).padStart(2, '0')}:${String(currentSeconds).padStart(2, '0')}/${String(durationMinutes).padStart(2, '0')}:${String(durationSeconds).padStart(2, '0')}`;
+        document.addEventListener('livewire:load', function () {
+            let audio = new Audio();
+            let progressBar = document.getElementById('progress-bar');
+            let progressFill = document.getElementById('progress-fill');
+            let timeDisplay = document.getElementById('time-display');
+            let volumeSlider = document.getElementById('volume-slider');
+            let currentMusicUrl = null;
+            
+            function updateProgress() {
+                if (audio.duration) {
+                    let progress = (audio.currentTime / audio.duration) * 100;
+                    progressFill.style.width = `${progress}%`;
+                    let currentMinutes = Math.floor(audio.currentTime / 60);
+                    let currentSeconds = Math.floor(audio.currentTime % 60);
+                    let durationMinutes = Math.floor(audio.duration / 60);
+                    let durationSeconds = Math.floor(audio.duration % 60);
+                    timeDisplay.textContent = `${String(currentMinutes).padStart(2, '0')}:${String(currentSeconds).padStart(2, '0')}/${String(durationMinutes).padStart(2, '0')}:${String(durationSeconds).padStart(2, '0')}`;
+                }
             }
-        }
 
-        function updateVolume() {
-            audio.volume = volumeSlider.value;
-            let volumeIcon = document.getElementById('volume-button').querySelector('i');
-            if (audio.volume === 0) {
-                volumeIcon.classList.remove('fa-volume-up', 'fa-volume-down');
-                volumeIcon.classList.add('fa-volume-mute');
-            } else if (audio.volume <= 0.5) {
-                volumeIcon.classList.remove('fa-volume-up', 'fa-volume-mute');
-                volumeIcon.classList.add('fa-volume-down');
-            } else {
-                volumeIcon.classList.remove('fa-volume-down', 'fa-volume-mute');
-                volumeIcon.classList.add('fa-volume-up');
+            function updateVolume() {
+                audio.volume = volumeSlider.value;
+                let volumeIcon = document.getElementById('volume-button').querySelector('i');
+                if (audio.volume === 0) {
+                    volumeIcon.classList.remove('fa-volume-up', 'fa-volume-down');
+                    volumeIcon.classList.add('fa-volume-mute');
+                } else if (audio.volume <= 0.5) {
+                    volumeIcon.classList.remove('fa-volume-up', 'fa-volume-mute');
+                    volumeIcon.classList.add('fa-volume-down');
+                } else {
+                    volumeIcon.classList.remove('fa-volume-down', 'fa-volume-mute');
+                    volumeIcon.classList.add('fa-volume-up');
+                }
             }
-        }
 
-        Livewire.on('playMusic', (url) => {
-            if (currentMusicUrl === url) {
-                audio.play();
-            } else {
-                localStorage.setItem('currentTime', audio.currentTime); 
-                audio.src = url;
-                audio.currentTime = localStorage.getItem('currentTime') || 0;
-                audio.play();
-            }
-            currentMusicUrl = url;
-            setInterval(updateProgress, 1000); 
-        });
-
-        Livewire.on('pauseMusic', () => {
-                audio.pause();
-                localStorage.setItem('currentTime', audio.currentTime); 
+            Livewire.on('playMusic', (url) => {
+                if (currentMusicUrl === url) {
+                    audio.play();
+                } else {
+                    localStorage.setItem('currentTime', audio.currentTime); 
+                    audio.src = url;
+                    audio.currentTime = localStorage.getItem('currentTime') || 0;
+                    audio.play();
+                }
+                currentMusicUrl = url;
+                setInterval(updateProgress, 1000); 
             });
 
+            Livewire.on('pauseMusic', () => {
+                    audio.pause();
+                    localStorage.setItem('currentTime', audio.currentTime); 
+                });
 
-        Livewire.on('updatePlayPause', (isPlaying) => {
-            if (isPlaying) {
-                audio.play();
-            } else {
-                audio.pause();
-                localStorage.setItem('currentTime', audio.currentTime); 
-            }
+
+            Livewire.on('updatePlayPause', (isPlaying) => {
+                if (isPlaying) {
+                    audio.play();
+                } else {
+                    audio.pause();
+                    localStorage.setItem('currentTime', audio.currentTime); 
+                }
+            });
+
+            progressBar.addEventListener('click', function (event) {
+                let rect = progressBar.getBoundingClientRect();
+                let offsetX = event.clientX - rect.left;
+                let progress = offsetX / progressBar.offsetWidth;
+                audio.currentTime = progress * audio.duration;
+            });
+
+            volumeSlider.addEventListener('input', updateVolume);
+            updateVolume();
         });
-
-        progressBar.addEventListener('click', function (event) {
-            let rect = progressBar.getBoundingClientRect();
-            let offsetX = event.clientX - rect.left;
-            let progress = offsetX / progressBar.offsetWidth;
-            audio.currentTime = progress * audio.duration;
-        });
-
-        volumeSlider.addEventListener('input', updateVolume);
-        updateVolume();
-    });
-
-        </script>     
-        <style>
-            .rotate-animation {
-                animation: rotate 2s linear infinite;
+        function closeToastrMsg() {
+            const toastrMsg = document.getElementById('toastrMsg');
+            if (toastrMsg) {
+                toastrMsg.style.display = 'none';
             }
+        }
+    </script>     
+    <style>
+        .rotate-animation {
+            animation: rotate 2s linear infinite;
+        }
 
-            @keyframes rotate {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-            @keyframes heartbeat {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-            }
+        @keyframes heartbeat {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+        }
 
-            .animate-heartbeat {
-            animation: heartbeat 0.6s ease-in-out;
-            }
+        .animate-heartbeat {
+        animation: heartbeat 0.6s ease-in-out;
+        }
 
     </style>
 </div>
