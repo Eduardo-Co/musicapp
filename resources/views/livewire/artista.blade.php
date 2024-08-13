@@ -59,7 +59,6 @@
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                     <option value="">Selecione um gênero</option>
-                                    <option value="">Select Genre</option>
                                     <option value="Rock">Rock</option>
                                     <option value="Pop">Pop</option>
                                     <option value="Hip Hop">Hip Hop</option>
@@ -104,7 +103,6 @@
     @if($viewingArtista)
         <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-40" wire:click.self="closeView">
             <div class="relative bg-white rounded-lg shadow-lg w-full max-w-lg" @click.stop>
-                <!-- Botão de Fechar -->
                 <button wire:click="closeView" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900" wire:loading.attr="disabled">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -150,6 +148,36 @@
         </div>
     @endif
     
+    @if($showDeleteModal)
+        <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" wire:click.self="closeDeleteModal">
+            <div class="relative bg-white rounded-lg shadow-lg w-full max-w-md" @click.stop>
+                <div class="p-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold">Confirm Deletion</h3>
+                </div>
+                <form wire:submit.prevent="delete({{ $musicToDelete }})">
+                    <div class="p-4">
+                        <p class="text-gray-600">Are you sure you want to delete this music?</p>
+                        <div class="mt-4 flex justify-end space-x-2">
+                            <button 
+                                type="button" 
+                                wire:click="closeDeleteModal" 
+                                class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg shadow hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                type="submit"
+                                class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+
 
     @unless($isEditing || $isCreating)
         <div class="mb-4 flex items-center space-x-4">
@@ -201,7 +229,7 @@
                                     Edit
                                 </button>
                                 <button 
-                                    wire:click="delete({{ $artista->id }})" 
+                                    wire:click="confirmDelete({{ $artista->id }})" 
                                     class="bg-red-600 text-white px-3 py-1 rounded-lg shadow hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500"
                                     wire:loading.attr="disabled"
                                 >

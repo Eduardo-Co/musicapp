@@ -8,6 +8,7 @@ use Livewire\WithFileUploads;
 use App\Models\Music as MusicModel;
 use App\Models\Album;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Artista;
 
 class Musica extends Component
 {
@@ -22,6 +23,7 @@ class Musica extends Component
     public $selectedMusicId;
     public $searchTerm = '';
     public $searchAlbum = '';
+    public $searchArtist = '';
     public $album_id;
     public $isEditing = false;
     public $isCreating = false;
@@ -31,12 +33,13 @@ class Musica extends Component
 
     protected $rules = [
         'title' => 'required|string|max:255',
-        'genre' => 'required|string|max:50',
-        'release_date' => 'required|date',
+        'genre' => 'nullable|string|max:50',
+        'release_date' => 'nullable|date',
         'duration' => 'required|integer',
         'status' => 'required|in:actived,inactived',
         'file_url' => 'required|file|mimes:mp3,wav,flac|max:20240',
         'album_id' => 'required|exists:albums,id',
+        'artist_id' => 'required|exists:artistas,id',
     ];
 
     public function view($musicId)
@@ -57,12 +60,16 @@ class Musica extends Component
         $albuns = Album::where('name', 'like', '%' . $this->searchAlbum . '%')
             ->get();
 
+        $artistas = Artista::where('nome', 'like', '%' . $this->searchArtist . '%')
+            ->get();
+
         $start = max($musics->currentPage() - 2, 1);
         $end = min($musics->currentPage() + 2, $musics->lastPage());
 
         return view('livewire.musica', [
             'musics' => $musics,
             'albuns' => $albuns,
+            'artists' => $artistas,
             'start' => $start,
             'end' => $end,
         ]);
@@ -92,7 +99,7 @@ class Musica extends Component
 
     public function save()
     {
-        $this->validate();
+        $this->validate($this->rules);
 
         $fileUrl = null;
 
@@ -115,6 +122,7 @@ class Musica extends Component
                 'status' => $this->status,
                 'file_url' => $fileUrl ?? $music->file_url,
                 'album_id' => $this->album_id,
+                'artist_id' => $this->artist_id,
             ]);
 
             session()->flash('message', 'Música atualizada com sucesso.');
@@ -128,6 +136,7 @@ class Musica extends Component
                 'status' => $this->status,
                 'file_url' => $fileUrl,
                 'album_id' => $this->album_id,
+                'artist_id' => $this->artist_id,
             ]);
 
             session()->flash('message', 'Música criada com sucesso.');
@@ -147,6 +156,7 @@ class Musica extends Component
         $this->selectedMusicId = null;
         $this->album_id = null;
         $this->searchAlbum = '';
+        $this->searchArtist = '';
         $this->isEditing = false;
         $this->isCreating = false;
     }
@@ -161,6 +171,12 @@ class Musica extends Component
     
             if ($music->playlists()->exists()) {
                 session()->flash('message-error', 'Não é possível deletar a música, pois ela está em uma playlist.');
+                $this->dispatchBrowserEvent('delete-error');
+                return;
+            }
+
+            if($music->artist()->exists()){
+                session()->flash('message-error', 'Não é possível deletar a música, pois ela está em um artista.');
                 $this->dispatchBrowserEvent('delete-error');
                 return;
             }

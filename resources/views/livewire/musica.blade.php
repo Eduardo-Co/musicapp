@@ -25,7 +25,6 @@
         </div>
     @endif
 
-
     @if($isEditing || $isCreating)
         <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-40" wire:click.self="resetInputFields">
             <div class="relative bg-white rounded-lg shadow-lg w-full max-w-lg" @click.stop>
@@ -40,7 +39,6 @@
                 <form wire:submit.prevent="save" enctype="multipart/form-data">
                     <div class="p-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Formulário -->
                             <div>
                                 <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
                                 <input 
@@ -49,7 +47,7 @@
                                     wire:model="title" 
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
-                                @error('title') <span class="text-red-50'z0">{{ $message }}</span> @enderror
+                                @error('title') <span class="text-red-500">{{ $message }}</span> @enderror
                             </div>
                             <div>
                                 <label for="genre" class="block text-sm font-medium text-gray-700">Genre</label>
@@ -120,7 +118,7 @@
                                         type="text" 
                                         id="album_search" 
                                         wire:model.debounce.300ms="searchAlbum" 
-                                        placeholder="Search for Albuns..."
+                                        placeholder="Search for Albums..."
                                         class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
                                     @error('album') <span class="text-red-500">{{ $message }}</span> @enderror
@@ -139,6 +137,33 @@
                                     @endforeach
                                 </select>
                                 @error('album') <span class="text-red-500">{{ $message }}</span> @enderror
+                            </div>
+                            <div>
+                                <label for="artist_search" class="block text-sm font-medium text-gray-700">Search Artist</label>
+                                <div class="relative">
+                                    <input 
+                                        type="text" 
+                                        id="artist_search" 
+                                        wire:model.debounce.300ms="searchArtist" 
+                                        placeholder="Search for Artists..."
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    @error('artist') <span class="text-red-500">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            <div>
+                                <label for="artist" class="block text-sm font-medium text-gray-700">Artist</label>
+                                <select 
+                                    id="artist" 
+                                    wire:model="artist_id" 
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="">Select Artist</option>
+                                    @foreach($artists as $artist)
+                                        <option value="{{ $artist->id }}">{{ $artist->nome }}</option>
+                                    @endforeach
+                                </select>
+                                @error('artist') <span class="text-red-500">{{ $message }}</span> @enderror
                             </div>                                                          
                         </div>
                     </div>
@@ -158,6 +183,7 @@
             </div>
         </div>
     @endif
+
 
     @if($showDeleteModal)
         <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" wire:click.self="closeDeleteModal">

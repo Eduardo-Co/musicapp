@@ -22,6 +22,8 @@ class User extends Component
     public $isEditing = false; 
     public $isCreating = false; 
     public $viewingUser = false;
+    public $musicToDelete;
+    public $showDeleteModal = false;	
 
     protected $rules = [
         'name' => 'required|string|max:255',
@@ -51,7 +53,7 @@ class User extends Component
     public function render()
     {
         $users = UserModel::where('name', 'like', '%' . $this->searchTerm . '%')
-                          ->paginate(10);
+                          ->paginate(6);
 
         $start = max($users->currentPage() - 2, 1);
         $end = min($users->currentPage() + 2, $users->lastPage());
@@ -68,15 +70,15 @@ class User extends Component
         $this->status = $user->status;
         $this->gender = $user->gender;
         $this->profile = $user->profile;
-        $this->isEditing = true; // ativa a edição
-        $this->isCreating = false; // desativa a criação
+        $this->isEditing = true; 
+        $this->isCreating = false; 
     }
 
     public function create()
     {
         $this->resetInputFields();
-        $this->isEditing = false; // desativa a edição
-        $this->isCreating = true; // ativa a criação
+        $this->isEditing = false; 
+        $this->isCreating = true;
         $this->profile = "user";
     }
 
@@ -131,31 +133,38 @@ class User extends Component
         $this->isEditing = false; 
         $this->isCreating = false; 
     }
-    public function delete($userId)
+    public function delete()
     {
         try {
-            $user = UserModel::findOrFail($userId);
+            $user = UserModel::findOrFail($this->musicToDelete);
     
             if ($user->playlists()->exists()) {
-                session()->flash('message-error', 'Não é possível deletar o usuário, pois ele possui playlists.');
-                return;
-            }
-    
-            if ($user->albums()->exists()) {
-                session()->flash('message-error', 'Não é possível deletar o usuário, pois ele possui álbuns.');
+                session()->flash('message-deleted', 'Não é possível deletar o usuário, pois ele possui playlists.');
                 return;
             }
     
             if ($user->favoriteMusics()->exists()) {
-                session()->flash('message-error', 'Não é possível deletar o usuário, pois ele tem músicas favoritas.');
+                session()->flash('message-deleted', 'Não é possível deletar o usuário, pois ele tem músicas favoritas.');
                 return;
             }
     
             $user->delete();
+            $this->musicToDelete = null;
+            $this->showDeleteModal = false;
             session()->flash('message-deleted', 'Usuário deletado com sucesso.');
             
         } catch (\Exception $e) {
-            session()->flash('message-error', 'Erro ao deletar o usuário.');
+            session()->flash('message-deleted', 'Erro ao deletar o usuário.');
         }
+    }
+    public function confirmDelete($musicId)
+    {
+        $this->musicToDelete = $musicId;
+        $this->showDeleteModal = true;
+    }
+    public function closeDeleteModal()
+    {
+            $this->showDeleteModal = false;
+            $this->musicToDelete = null;
     }
 }

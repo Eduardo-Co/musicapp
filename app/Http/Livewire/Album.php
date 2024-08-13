@@ -24,11 +24,14 @@ class Album extends Component
     public $isEditing = false;
     public $isCreating = false;
     public $viewingAlbum = null;
+    public $albumToDelete;
+    public $showDeleteModal = false;	
+
     
     protected $rules = [
         'name' => 'required|string|max:255',
-        'release_date' => 'required|date',
-        'foto_url' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        'release_date' => 'nullable|date',
+        'foto_url' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         'selectedArtists' => 'required|array',
         'selectedArtists.*.id' => 'exists:artistas,id',
     ];
@@ -68,7 +71,7 @@ class Album extends Component
 
     public function closeView()
     {
-        $this->viewingAlbum = null; // Fechar o modal
+        $this->viewingAlbum = null; 
     }
     
     public function render()
@@ -83,7 +86,7 @@ class Album extends Component
         $end = min($albuns->currentPage() + 2, $albuns->lastPage());
     
         return view('livewire.album', [
-            'albuns' => $albuns, // Certifique-se de que esta linha está aqui
+            'albuns' => $albuns, 
             'artists' => $artists,
             'selectedArtists' => $this->selectedArtists,
             'start' => $start,
@@ -98,7 +101,7 @@ class Album extends Component
         $this->name = $album->name;
         $this->release_date = $album->release_date;
         $this->foto_url = $album->foto_url;
-        $this->selectedArtists = $album->artistas()->get()->toArray(); // Atualizar selectedArtists
+        $this->selectedArtists = $album->artistas()->get()->toArray(); 
         $this->isEditing = true;
         $this->isCreating = false;
     }
@@ -162,9 +165,9 @@ class Album extends Component
         $this->isCreating = false;
     }
 
-    public function delete($albumId)
+    public function delete()
     {
-        $album = AlbumModel::findOrFail($albumId);
+        $album = AlbumModel::findOrFail($this->albumToDelete);
 
         if ($album->musics()->exists()) {
             session()->flash('message-deleted', 'O álbum não pode ser deletado porque possui músicas associadas.');    
@@ -176,5 +179,17 @@ class Album extends Component
             $album->delete();
             session()->flash('message-deleted', 'Álbum deletado com sucesso.');
         }
+        $this->albumToDelete = null;
+        $this->showDeleteModal = false;
+    }
+    public function confirmDelete($albumId)
+    {
+        $this->albumToDelete = $albumId;
+        $this->showDeleteModal = true;
+    }
+    public function closeDeleteModal()
+    {
+        $this->showDeleteModal = false;
+        $this->albumToDelete = null;
     }
 }

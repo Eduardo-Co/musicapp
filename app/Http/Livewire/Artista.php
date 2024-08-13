@@ -20,6 +20,8 @@ class Artista extends Component
     public $isEditing = false;
     public $isCreating = false;
     public $viewingArtista = null;
+    public $artistToDelete;
+    public $showDeleteModal = false;	
 
     protected $rules = [
         'nome' => 'required|string|max:255',
@@ -43,7 +45,7 @@ class Artista extends Component
         $this->resetPage();
     }
 
-    public function render()
+    public function render()    
     {
         $artistas = ArtistaModel::where('nome', 'like', '%' . $this->searchTerm . '%')
                                 ->paginate(10);
@@ -63,7 +65,7 @@ class Artista extends Component
         $artista = ArtistaModel::findOrFail($artistaId);
         $this->selectedArtistaId = $artista->id;
         $this->nome = $artista->nome;
-        $this->genero = $artista->genero; // Corrigido para 'genero'
+        $this->genero = $artista->genero;
         $this->foto_url = $artista->foto_url;
         $this->isEditing = true;
         $this->isCreating = false;
@@ -78,7 +80,8 @@ class Artista extends Component
 
     public function save()
     {
-        $this->validate();
+        
+        $this->validate($this->rules);
 
         $fotoUrl = null;
 
@@ -123,9 +126,9 @@ class Artista extends Component
         $this->isCreating = false;
     }
 
-    public function delete($artistaId)
+    public function delete()
     {
-        $artista = ArtistaModel::findOrFail($artistaId);
+        $artista = ArtistaModel::findOrFail($this->artistToDelete);
 
 
         if ($artista->albums()->exists()) {
@@ -136,7 +139,19 @@ class Artista extends Component
                 Storage::disk('public')->delete($artista->foto_url);
             }
             $artista->delete();
+            $this->artistToDelete = null;
+            $this->showDeleteModal = false;
             session()->flash('message-deleted', 'Artista deletado com sucesso.');
         }
+    }
+    public function confirmDelete($artistId)
+    {
+        $this->artistToDelete = $artistId;
+        $this->showDeleteModal = true;
+    }
+    public function closeDeleteModal()
+    {
+            $this->showDeleteModal = false;
+            $this->artistToDelete = null;
     }
 }

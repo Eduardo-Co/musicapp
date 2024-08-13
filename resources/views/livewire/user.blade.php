@@ -213,6 +213,36 @@
         </div>
     @endif
 
+    @if($showDeleteModal)
+        <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" wire:click.self="closeDeleteModal">
+            <div class="relative bg-white rounded-lg shadow-lg w-full max-w-md" @click.stop>
+                <div class="p-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold">Confirm Deletion</h3>
+                </div>
+                <form wire:submit.prevent="delete({{ $musicToDelete }})">
+                    <div class="p-4">
+                        <p class="text-gray-600">Are you sure you want to delete this music?</p>
+                        <div class="mt-4 flex justify-end space-x-2">
+                            <button 
+                                type="button" 
+                                wire:click="closeDeleteModal" 
+                                class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg shadow hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                type="submit"
+                                class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+
     @unless($isEditing || $isCreating)
         <div class="mb-4 flex items-center space-x-4">
             <input 
@@ -260,7 +290,7 @@
                                     Edit
                                 </button>
                                 <button 
-                                    wire:click="delete({{ $user->id }})" 
+                                    wire:click="confirmDelete({{ $user->id }})" 
                                     class="bg-red-600 text-white px-3 py-1 rounded-lg shadow hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500"
                                     wire:loading.attr="disabled"
                                 >
