@@ -14,6 +14,7 @@ class Musica extends Component
 {
     use WithPagination, WithFileUploads;
 
+    public $artist_id;
     public $title;
     public $genre;
     public $release_date;
@@ -170,19 +171,19 @@ class Musica extends Component
             $user = auth()->user();
     
             if ($music->playlists()->exists()) {
-                session()->flash('message-error', 'Não é possível deletar a música, pois ela está em uma playlist.');
+                session()->flash('message-deleted', 'Não é possível deletar a música, pois ela está em uma playlist.');
+                $this->dispatchBrowserEvent('delete-error');
+                return;
+            }
+            if ($user->favoriteMusics()->exists()) {
+                session()->flash('message-deleted', 'Não é possível deletar a música, pois ela está marcada como favorita por algum usuário.');
                 $this->dispatchBrowserEvent('delete-error');
                 return;
             }
 
-            if($music->artist()->exists()){
-                session()->flash('message-error', 'Não é possível deletar a música, pois ela está em um artista.');
-                $this->dispatchBrowserEvent('delete-error');
-                return;
-            }
     
-            if ($user->favoriteMusics()->where('music_id', $musicId)->exists()) {
-                session()->flash('message-error', 'Não é possível deletar a música, pois ela está marcada como favorita por algum usuário.');
+            if ($music->artista()->exists()) { 
+                session()->flash('message-deleted', 'Não é possível deletar a música, pois ela está associada a um artista.');
                 $this->dispatchBrowserEvent('delete-error');
                 return;
             }
@@ -192,17 +193,18 @@ class Musica extends Component
             }
     
             $music->delete();
-            $this->musicToDelete = null;
-            $this->showDeleteModal = false;
-    
             $this->dispatchBrowserEvent('delete-finish');
             session()->flash('message-deleted', 'Música deletada com sucesso.');
     
         } catch (\Exception $e) {
             $this->dispatchBrowserEvent('delete-error');
             session()->flash('message-error', 'Erro ao deletar a música.');
-        } 
+        } finally {
+            $this->musicToDelete = null;
+            $this->showDeleteModal = false;
+        }
     }
+    
     
     public function confirmDelete($musicId)
     {

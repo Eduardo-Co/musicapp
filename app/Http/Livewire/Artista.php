@@ -125,25 +125,31 @@ class Artista extends Component
         $this->isEditing = false;
         $this->isCreating = false;
     }
-
     public function delete()
     {
-        $artista = ArtistaModel::findOrFail($this->artistToDelete);
-
-
-        if ($artista->albums()->exists()) {
-            session()->flash('message-deleted', 'O artista não pode ser deletado porque está relacionado a um ou mais álbuns.');
-        }else{
-
+        try {
+            $artista = ArtistaModel::findOrFail($this->artistToDelete);
+    
+            if ($artista->albums()->exists()) {
+                session()->flash('message-deleted', 'O artista não pode ser deletado porque está relacionado a um ou mais álbuns.');
+                return;
+            }
+    
             if ($artista->foto_url) {
                 Storage::disk('public')->delete($artista->foto_url);
             }
+    
             $artista->delete();
+            session()->flash('message-deleted', 'Artista deletado com sucesso.');
+    
+        } catch (\Exception $e) {
+            session()->flash('message-error', 'Erro ao deletar o artista.');
+        } finally {
             $this->artistToDelete = null;
             $this->showDeleteModal = false;
-            session()->flash('message-deleted', 'Artista deletado com sucesso.');
         }
     }
+    
     public function confirmDelete($artistId)
     {
         $this->artistToDelete = $artistId;

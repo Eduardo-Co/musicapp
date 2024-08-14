@@ -149,12 +149,13 @@ class User extends Component
             }
     
             $user->delete();
-            $this->musicToDelete = null;
-            $this->showDeleteModal = false;
             session()->flash('message-deleted', 'Usuário deletado com sucesso.');
             
         } catch (\Exception $e) {
             session()->flash('message-deleted', 'Erro ao deletar o usuário.');
+        }finally{
+            $this->musicToDelete = null;
+            $this->showDeleteModal = false;
         }
     }
     public function confirmDelete($musicId)

@@ -16,7 +16,7 @@ class Album extends Model
      */
    
      protected $fillable = [
-        'name', 'release_date','foto_url',
+        'name', 'release_date','foto_url', 'artist_id',
     ];
     /**
      * The attributes that should be hidden for serialization.
@@ -35,9 +35,9 @@ class Album extends Model
     /**
      * The artistas that belong to the album.
      */
-    public function artistas()
+    public function artista()
     {
-        return $this->belongsToMany(Artista::class, 'artistas_albums');
+        return $this->belongsTo(Artista::class, 'artist_id');
     }
     public function musics()
     {

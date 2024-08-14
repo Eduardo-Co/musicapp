@@ -18,7 +18,14 @@ class CreateAlbumsTable extends Migration
             $table->string('name');
             $table->string('foto_url')->nullable();
             $table->date('release_date');
+            $table->unsignedBigInteger('artist_id'); 
             $table->timestamps();
+
+            // Set up foreign key constraint
+            $table->foreign('artist_id')
+                  ->references('id')
+                  ->on('artistas')
+                  ->onDelete('cascade'); 
         });
     }
 
@@ -29,6 +36,10 @@ class CreateAlbumsTable extends Migration
      */
     public function down()
     {
+        Schema::table('albums', function (Blueprint $table) {
+            $table->dropForeign(['artist_id']);
+        });
+
         Schema::dropIfExists('albums');
     }
 }

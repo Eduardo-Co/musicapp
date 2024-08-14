@@ -144,7 +144,7 @@
 
     <div class="fixed bottom-0 bg-white shadow-md rounded-t-lg overflow-hidden p-4" style="width: calc(100% - 120px); margin-right: 100px; z-index: 50;">
         <div class="flex flex-col sm:flex-row items-center relative">
-            @if($isPlaying || $currentMusic)
+            @if($isPlaying && $currentMusic)
                 <div class="flex-shrink-0">
                     <img id="music-image" 
                         src="{{ $currentMusic->album->foto_url ? asset('storage/' . $currentMusic->album->foto_url) : '' }}" 

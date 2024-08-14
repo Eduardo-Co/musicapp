@@ -19,6 +19,7 @@ class Music extends Model
         'status',
         'file_url',
         'album_id',
+        'artist_id'
 
     ];
     

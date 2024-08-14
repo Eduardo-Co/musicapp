@@ -31,7 +31,7 @@
                 <div class="p-4 border-b border-gray-200">
                     <h3 class="text-lg font-semibold">Confirm Deletion</h3>
                 </div>
-                <form wire:submit.prevent="delete({{ $musicToDelete }})">
+                <form wire:submit.prevent="delete({{ $albumToDelete }})">
                     <div class="p-4">
                         <p class="text-gray-600">Are you sure you want to delete this music?</p>
                         <div class="mt-4 flex justify-end space-x-2">
@@ -124,21 +124,8 @@
                                         <option value="{{ $artist->id }}">{{ $artist->nome }}</option>
                                     @endforeach
                                 </select>
-                                @error('selectedArtists') <span class="text-red-500">{{ $message }}</span> @enderror
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Selected Artists</label>
-                                <div class="border p-2 bg-gray-100 rounded-lg max-h-60 overflow-y-auto">
-                                    @foreach($selectedArtists as $artist)
-                                        <div class="flex items-center mb-1">
-                                            <span class="text-black bg-white border border-gray-300 px-2 py-1 rounded-lg mr-2">
-                                                {{ $artist['nome'] }}
-                                            </span>
-                                            <button type="button" wire:click="removeArtist({{ $artist['id'] }})" class="text-red-500">x</button>
-                                        </div>
-                                    @endforeach
-                                </div>                                
-                            </div>                                                           
+                                @error('artist_id') <span class="text-red-500">{{ $message }}</span> @enderror
+                            </div>                                                          
                         </div>
                     </div>
                     <div class="p-4 border-t border-gray-200 flex justify-end">
@@ -203,11 +190,9 @@
                         <div class="mt-4">
                             <label class="block text-sm font-medium text-gray-700">Artists</label>
                             <div class="flex flex-wrap gap-2 mt-2">
-                                @foreach($viewingAlbum->artistas as $artist)
-                                    <div class="bg-gray-100 px-4 py-2 rounded-lg shadow-sm">
-                                        <span>{{ $artist->nome }}</span>
-                                    </div>
-                                @endforeach
+                                <div class="bg-gray-100 px-4 py-2 rounded-lg shadow-sm">
+                                    <span>{{ $viewingAlbum->artista->nome }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>

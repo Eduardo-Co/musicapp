@@ -14,7 +14,12 @@ class AddArtistaIdToMusicsTable extends Migration
     public function up()
     {
         Schema::table('musics', function (Blueprint $table) {
-            $table->foreignId('artista_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('artist_id');
+
+            $table->foreign('artist_id')
+                  ->references('id')
+                  ->on('artistas')
+                  ->onDelete('cascade');
         });
     }
 
@@ -26,8 +31,8 @@ class AddArtistaIdToMusicsTable extends Migration
     public function down()
     {
         Schema::table('musics', function (Blueprint $table) {
-            $table->dropForeign(['artista_id']);
-            $table->dropColumn('artista_id');
+            $table->dropForeign(['artist_id']);
+            $table->dropColumn('artist_id');
         });
     }
 }

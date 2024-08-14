@@ -20,7 +20,6 @@ class Album extends Component
     public $searchTerm = '';
     public $searchArtist = '';
     public $artist_id; 
-    public $selectedArtists = []; 
     public $isEditing = false;
     public $isCreating = false;
     public $viewingAlbum = null;
@@ -32,38 +31,14 @@ class Album extends Component
         'name' => 'required|string|max:255',
         'release_date' => 'nullable|date',
         'foto_url' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        'selectedArtists' => 'required|array',
-        'selectedArtists.*.id' => 'exists:artistas,id',
+        'artist_id' => 'required|exists:artistas,id',
     ];
 
     public function updatingSearchArtist()
     {
         $this->resetPage();
     }
-
-    public function updatedArtistId()
-    {
-        $this->addArtist();
-    }
-
-    public function addArtist()
-    {
-        if ($this->artist_id && !in_array($this->artist_id, array_column($this->selectedArtists, 'id'))) {
-            $artist = Artista::find($this->artist_id);
-            if ($artist) {
-                $this->selectedArtists[] = $artist->toArray();
-            }
-        }
-        $this->artist_id = null; 
-    }
     
-    public function removeArtist($artistId)
-    {
-        $this->selectedArtists = array_filter($this->selectedArtists, function ($artist) use ($artistId) {
-            return $artist['id'] != $artistId;
-        });
-    }
-
     public function view($albumId)
     {
         $this->viewingAlbum = AlbumModel::findOrFail($albumId);
@@ -88,7 +63,6 @@ class Album extends Component
         return view('livewire.album', [
             'albuns' => $albuns, 
             'artists' => $artists,
-            'selectedArtists' => $this->selectedArtists,
             'start' => $start,
             'end' => $end,
         ]);
@@ -101,7 +75,7 @@ class Album extends Component
         $this->name = $album->name;
         $this->release_date = $album->release_date;
         $this->foto_url = $album->foto_url;
-        $this->selectedArtists = $album->artistas()->get()->toArray(); 
+        $this->artist_id = $album->artist_id;
         $this->isEditing = true;
         $this->isCreating = false;
     }
@@ -134,9 +108,9 @@ class Album extends Component
                 'name' => $this->name,
                 'release_date' => $this->release_date,
                 'foto_url' => $coverImageUrl ?? $album->foto_url,
+                'artist_id' => $this->artist_id,
             ]);
     
-            $album->artistas()->sync(array_column($this->selectedArtists, 'id')); 
             session()->flash('message', 'Álbum atualizado com sucesso.');
 
         } elseif ($this->isCreating) {
@@ -144,10 +118,9 @@ class Album extends Component
                 'name' => $this->name,
                 'release_date' => $this->release_date,
                 'foto_url' => $coverImageUrl,
+                'artist_id' => $this->artist_id,
             ]);
     
-            $album->artistas()->attach(array_column($this->selectedArtists, 'id')); 
-            session()->flash('message', 'Álbum criado com sucesso.');
         }
     
         $this->resetInputFields();
@@ -159,7 +132,7 @@ class Album extends Component
         $this->release_date = '';
         $this->foto_url = null;
         $this->selectedAlbumId = null;
-        $this->selectedArtists = [];
+        $this->artist_id = '';
         $this->searchArtist = '';
         $this->isEditing = false;
         $this->isCreating = false;

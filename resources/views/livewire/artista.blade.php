@@ -154,7 +154,7 @@
                 <div class="p-4 border-b border-gray-200">
                     <h3 class="text-lg font-semibold">Confirm Deletion</h3>
                 </div>
-                <form wire:submit.prevent="delete({{ $musicToDelete }})">
+                <form wire:submit.prevent="delete({{ $artistToDelete }})">
                     <div class="p-4">
                         <p class="text-gray-600">Are you sure you want to delete this music?</p>
                         <div class="mt-4 flex justify-end space-x-2">
