@@ -35,7 +35,7 @@ class Album extends Model
     /**
      * The artistas that belong to the album.
      */
-    public function artista()
+    public function artistas()
     {
         return $this->belongsTo(Artista::class, 'artist_id');
     }

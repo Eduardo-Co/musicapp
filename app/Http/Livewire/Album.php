@@ -148,7 +148,6 @@ class Album extends Component
             if ($album->foto_url) {
                 Storage::disk('public')->delete($album->foto_url);
             }
-            $album->artistas()->detach();
             $album->delete();
             session()->flash('message-deleted', 'Álbum deletado com sucesso.');
         }
