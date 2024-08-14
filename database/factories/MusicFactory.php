@@ -2,24 +2,32 @@
 
 namespace Database\Factories;
 
-use App\Models\Music;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
+use App\Models\Music;
+use App\Models\Album;
+use App\Models\Artista;
 
 class MusicFactory extends Factory
 {
     protected $model = Music::class;
 
+
     public function definition()
     {
+        $genres = [
+            'Rock', 'Pop', 'Hip Hop', 'R&B', 'Country',
+            'Jazz', 'Reggae', 'Electronic', 'Classical'
+        ];
+
         return [
-            'title' => $this->faker->sentence(3), 
-            'genre' => $this->faker->randomElement(['Rock', 'Pop', 'Hip Hop', 'R&B', 'Country', 'Jazz', 'Reggae', 'Electronic', 'Classical']),
+            'title' => $this->faker->sentence(),
+            'genre' => $this->faker->randomElement($genres),
             'release_date' => $this->faker->date(),
-            'duration' => $this->faker->numberBetween(120, 600), 
-            'status' => 'actived',
-            'file_url' => $this->faker->url(), 
-            'album_id' => \App\Models\Album::factory(), 
+            'duration' => $this->faker->numberBetween(180, 300), 
+            'status' => $this->faker->randomElement(['actived', 'inactived']),
+            'file_url' => $this->faker->url(),
+            'album_id' => Album::inRandomOrder()->first()->id,
+            'artist_id' => Artista::inRandomOrder()->first()->id,
         ];
     }
 }

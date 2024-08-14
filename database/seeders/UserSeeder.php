@@ -14,7 +14,10 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        // Cria um usuário administrador
+        User::factory()
+            ->count(30)
+            ->create();
+
         User::factory()->create([
             'name' => 'Admin User',
             'email' => 'admin@example.com',
@@ -24,7 +27,6 @@ class UserSeeder extends Seeder
             'gender' => 'male', 
         ]);
 
-        // Cria um usuário normal
         User::factory()->create([
             'name' => 'Normal User',
             'email' => 'user@example.com',
