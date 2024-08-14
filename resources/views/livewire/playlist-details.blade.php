@@ -85,9 +85,7 @@
                 </div>
                 <div class="p-3 w-full">{{ $music->title }}</div>
                 <div class="p-3 w-full">
-                    @foreach ($music->album->artistas as $artista)
-                        {{ $artista->nome }}{{ $loop->last ? '' : ' | ' }}
-                    @endforeach
+                    {{$music->artista->name ?? 'Unknown'}}
                 </div>
                 <div class="p-3 w-full">{{ $music->album->name ?? 'Unknown' }}</div>
                 <div class="p-3 w-24 flex-shrink-0 text-right">{{ $this->formatDuration($music->duration) }}</div>
