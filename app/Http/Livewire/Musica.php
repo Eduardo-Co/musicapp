@@ -175,7 +175,7 @@ class Musica extends Component
                 $this->dispatchBrowserEvent('delete-error');
                 return;
             }
-            if ($user->favoriteMusics()->exists()) {
+            if ($music->favoritedBy()->exists()) {
                 session()->flash('message-deleted', 'Não é possível deletar a música, pois ela está marcada como favorita por algum usuário.');
                 $this->dispatchBrowserEvent('delete-error');
                 return;
