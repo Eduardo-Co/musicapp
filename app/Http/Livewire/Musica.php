@@ -168,7 +168,6 @@ class Musica extends Component
             $this->dispatchBrowserEvent('delete-start');
     
             $music = MusicModel::findOrFail($musicId);
-            $user = auth()->user();
     
             if ($music->playlists()->exists()) {
                 session()->flash('message-deleted', 'Não é possível deletar a música, pois ela está em uma playlist.');

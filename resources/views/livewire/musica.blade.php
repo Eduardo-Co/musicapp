@@ -121,7 +121,6 @@
                                         placeholder="Search for Albums..."
                                         class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
-                                    @error('album') <span class="text-red-500">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                             <div>
@@ -136,7 +135,7 @@
                                         <option value="{{ $album->id }}">{{ $album->name }}</option>
                                     @endforeach
                                 </select>
-                                @error('album') <span class="text-red-500">{{ $message }}</span> @enderror
+                                @error('album_id') <span class="text-red-500">{{ $message }}</span> @enderror
                             </div>
                             <div>
                                 <label for="artist_search" class="block text-sm font-medium text-gray-700">Search Artist</label>
@@ -148,7 +147,6 @@
                                         placeholder="Search for Artists..."
                                         class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
-                                    @error('artist') <span class="text-red-500">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                             <div>
@@ -163,7 +161,7 @@
                                         <option value="{{ $artist->id }}">{{ $artist->nome }}</option>
                                     @endforeach
                                 </select>
-                                @error('artist') <span class="text-red-500">{{ $message }}</span> @enderror
+                                @error('artist_id') <span class="text-red-500">{{ $message }}</span> @enderror
                             </div>                                                          
                         </div>
                     </div>
